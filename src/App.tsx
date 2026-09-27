@@ -19,6 +19,7 @@ function GuidePanel() {
   const [min, setMin] = useState(false)
   const [list, setList] = useState(false)
   const [pulse, setPulse] = useState(false)
+  const [askReset, setAskReset] = useState(false)
   const cur = currentStep(s)
   const needSwitch = cur.role !== 'system' && cur.role !== s.role
   const last = cur.no === STEPS.length
@@ -92,7 +93,15 @@ function GuidePanel() {
       )}
       <div className="guide-foot">
         <button className="link" onClick={() => setList(!list)}>{list ? '접기' : '전체 단계 · 추가 예외'}</button>
-        <button className="link" style={{ color: 'var(--ink-mute)' }} onClick={() => { if (confirm('처음부터 다시 시작할까요?')) d({ type: 'reset' }) }}>처음부터</button>
+        {askReset ? (
+          <span className="row" style={{ gap: 10 }}>
+            <span className="caption">모든 진행을 지울까요?</span>
+            <button className="link" style={{ color: 'var(--critical)' }} onClick={() => { setAskReset(false); d({ type: 'reset' }) }}>다시 시작</button>
+            <button className="link" style={{ color: 'var(--ink-mute)' }} onClick={() => setAskReset(false)}>취소</button>
+          </span>
+        ) : (
+          <button className="link" style={{ color: 'var(--ink-mute)' }} onClick={() => setAskReset(true)}>처음부터</button>
+        )}
       </div>
     </aside>
   )

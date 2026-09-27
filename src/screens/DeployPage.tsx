@@ -268,7 +268,7 @@ function DeployRun() {
                 <div style={{ fontSize: 16, fontWeight: 500 }}>{okFs.map((f) => f.name).join('·')}에서 v{v.version}이 정상 동작 중입니다</div>
                 {excluded.length > 0 && (
                   <div className="caption" style={{ marginTop: 4, fontSize: 13 }}>
-                    {excluded.map((f) => `${f.name}는 v${s.factoryVersion[f.id]}를 유지합니다`).join(' · ')}. 선행 버전을 먼저 배포한 뒤 다시 검증하세요.
+                    {excluded.map((f) => `${f.name}는 이전 버전(v${s.factoryVersion[f.id]})을 유지합니다`).join(' · ')}. 선행 버전을 먼저 배포한 뒤 다시 검증하세요.
                   </div>
                 )}
               </div>

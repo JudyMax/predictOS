@@ -26,7 +26,7 @@ export default function VersionDrawer({ id }: { id: string }) {
 
   return (
     <Drawer
-      title={<span className="row">앱 A v<span className="tnum">{v.version}</span> <RegBadge status={v.status} /></span>}
+      title={<span className="row">모터 진단 v<span className="tnum">{v.version}</span> <RegBadge status={v.status} /></span>}
       sub={<>제출자 {v.submitter} · <span className="tnum">{v.submittedAt}</span>{v.approvedBy && v.status === 'approved' ? ` · 승인자 ${v.approvedBy}` : ''}</>}
       onClose={close}
       foot={foot}

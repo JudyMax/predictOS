@@ -210,7 +210,7 @@ export function reducer(s: State, a: Action): State {
               history: [...v.history, { at, actor: USERS.admin.name, text: `반려 · 사유: ${a.reason}` }] }
           : v,
       )
-      const n: Notice = { id: seq++, role: 'am', text: `앱 A v2.0.1 등록이 반려되었습니다`, versionId: a.id, read: false }
+      const n: Notice = { id: seq++, role: 'am', text: `모터 진단 v2.0.1 등록이 반려되었습니다`, versionId: a.id, read: false }
       return { ...s, versions, modal: null, notices: [n, ...s.notices], rejectCount: s.rejectCount + 1, toast: toast('반려했습니다. 사유는 제출자에게만 보입니다') }
     }
     case 'startDeploy':

@@ -172,21 +172,21 @@ function FactoryPage({ id }: { id: FactoryId }) {
       <div className="caption">{f.site} · 모든 역할이 같은 화면에서 공장별 상태를 확인합니다. 배포 조작은 배포 관리에서만 합니다.</div>
       <div className="table-wrap">
         <table className="tbl">
-          <thead><tr><th>설치된 앱</th><th className="r">버전</th><th>배포 상태</th></tr></thead>
+          <thead><tr><th>설치된 앱</th><th>분류</th><th className="r">버전</th><th>배포 상태</th></tr></thead>
           <tbody>
             <tr>
-              <td>앱 A · 모터 진단 <span className="caption">설비 진단</span></td>
+              <td>모터 진단</td><td className="mute">설비 진단</td>
               <td className="r mono tnum">v{cur}</td>
               <td>{run ? <RunBadge run={run} /> : <Badge tone="normal">완료 · 정상 동작</Badge>}</td>
             </tr>
             {OTHER_APPS.filter((o) => o.installed.includes(id)).map((o) => (
-              <tr key={o.app}><td>{o.app} <span className="caption">{o.category}</span></td><td className="r mono tnum">v{o.version}</td><td><Badge tone="normal">완료 · 정상 동작</Badge></td></tr>
+              <tr key={o.app}><td>{o.app}</td><td className="mute">{o.category}</td><td className="r mono tnum">v{o.version}</td><td><Badge tone="normal">완료 · 정상 동작</Badge></td></tr>
             ))}
           </tbody>
         </table>
       </div>
       {id === 'B' && cur === '1.0.3' && (
-        <div className="banner caution"><span>●</span><div>앱 A v2.0.1로 올리려면 선행 버전(v1.1 이상)을 먼저 배포해야 합니다.</div></div>
+        <div className="banner caution"><span>●</span><div>모터 진단 v2.0.1로 올리려면 선행 버전(v1.1 이상)을 먼저 배포해야 합니다.</div></div>
       )}
     </>
   )

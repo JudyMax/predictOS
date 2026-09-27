@@ -53,7 +53,7 @@ export default function RegisterDrawer({ resubmitOf }: { resubmitOf?: string }) 
   return (
     <Drawer
       title={resubmitOf ? '재제출' : '새 버전 등록'}
-      sub={resubmitOf ? '재제출 대상: 앱 A · 모터 진단 v2.0.1' : '앱 A · 모터 진단'}
+      sub={resubmitOf ? '재제출 대상: 모터 진단 v2.0.1' : '모터 진단'}
       onClose={close}
       foot={
         <>

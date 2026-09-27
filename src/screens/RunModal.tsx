@@ -26,7 +26,7 @@ export default function RunModal() {
       }
     >
       <div className="kv">
-        <div className="k">버전</div><div className="mono tnum">앱 A v2.0.1</div>
+        <div className="k">버전</div><div className="mono tnum">모터 진단 v2.0.1</div>
         <div className="k">실행 대상</div><div>{targets.map(name).join(', ')}</div>
         <div className="k">제외</div>
         <div>{excluded.length ? excluded.map((f) => `${f.name}(${reason(f.id)})`).join(', ') : '없음'}</div>

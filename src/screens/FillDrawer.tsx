@@ -23,7 +23,7 @@ export default function FillDrawer({ factory }: { factory: FactoryId }) {
   return (
     <Drawer
       title="부족 항목 채우기"
-      sub={`${FACTORIES.find((f) => f.id === factory)!.name} · 앱 A v2.0.1 · Platform Admin만 채울 수 있습니다`}
+      sub={`${FACTORIES.find((f) => f.id === factory)!.name} · 모터 진단 v2.0.1 · Platform Admin만 채울 수 있습니다`}
       onClose={close}
       foot={
         <>

@@ -20,7 +20,7 @@ export default function RejectModal({ id }: { id: string }) {
       }
     >
       <div className="caption" style={{ color: 'var(--ink-secondary)', fontSize: 13 }}>
-        앱 A v2.0.1이 반려 상태가 되고, 사유는 제출자에게만 보입니다. 반려는 되돌릴 수 없습니다.
+        모터 진단 v2.0.1이 반려 상태가 되고, 사유는 제출자에게만 보입니다. 반려는 되돌릴 수 없습니다.
       </div>
       <label className="label" htmlFor="reason">반려 사유 <span style={{ color: 'var(--critical)' }}>(필수)</span></label>
       <textarea id="reason" rows={4} value={reason} autoFocus placeholder="제출자가 무엇을 고쳐야 하는지 적어 주세요" onChange={(e) => setReason(e.target.value)} />

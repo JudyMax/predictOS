@@ -89,7 +89,7 @@ export default function DeployPage() {
         <div className="between">
           <div className="row" style={{ gap: 12 }}>
             <span className="caption">배포할 버전</span>
-            <span style={{ fontWeight: 500 }}>앱 A · 모터 진단</span>
+            <span style={{ fontWeight: 500 }}>모터 진단</span>
             <span className="mono tnum">v{v.version}</span>
             <Badge tone="normal">승인됨</Badge>
           </div>

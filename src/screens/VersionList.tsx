@@ -64,7 +64,11 @@ export default function VersionList() {
               <td><span className="chev">{open ? '▾' : '▸'}</span>모터 진단 <span className="caption">버전 {s.versions.length}개</span></td>
               <td className="mute">설비 진단</td>
               <td className="r mono tnum">v{latest.version}</td>
-              <td>{pending.length ? <RegBadge status="pending" /> : rejected ? <RegBadge status="rejected" /> : <RegBadge status="approved" />}</td>
+              <td>
+                {pending.length ? <span className="cell-stack"><RegBadge status="pending" /><span className="caption mono">v{pending[0].version}</span></span>
+                  : rejected ? <span className="cell-stack"><RegBadge status="rejected" /><span className="caption mono">v{rejected.version}</span></span>
+                  : <RegBadge status="approved" />}
+              </td>
               <td className="mute">{summary(latest, s.deploy, s.factoryVersion)}</td>
               <td>{newest.submitter}</td>
               <td className="r tnum mute">{newest.submittedAt}</td>

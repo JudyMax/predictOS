@@ -1,5 +1,5 @@
 import { useEffect, useReducer, useState, type ReactNode } from 'react'
-import { FACTORIES, OTHER_APPS, USERS, type FactoryId, type Role } from './data'
+import { FACTORIES, OTHER_APPS, USERS, WORKSPACE, type FactoryId, type Role } from './data'
 import { initialState, reducer, type State } from './state'
 import { AppCtx, useApp } from './store'
 import { STEPS, currentStep, roleLabel } from './guide'
@@ -12,42 +12,74 @@ import DeployPage from './screens/DeployPage'
 import FillDrawer from './screens/FillDrawer'
 import RunModal from './screens/RunModal'
 
-function ScenarioBar() {
+function GuidePanel() {
   const { s, d } = useApp()
-  const [open, setOpen] = useState(false)
+  const [min, setMin] = useState(false)
+  const [list, setList] = useState(false)
+  const [pulse, setPulse] = useState(false)
   const cur = currentStep(s)
   const needSwitch = cur.role !== 'system' && cur.role !== s.role
+  const last = cur.no === STEPS.length
+
+  // 단계가 바뀌면 패널을 펼치고 잠깐 강조한다
+  useEffect(() => {
+    setMin(false)
+    setPulse(true)
+    const t = setTimeout(() => setPulse(false), 1200)
+    return () => clearTimeout(t)
+  }, [cur.no, needSwitch])
+
+  const cls = `guide ${s.drawer ? 'shifted' : ''} ${pulse ? 'pulse' : ''}`
+  if (min) {
+    return (
+      <button className={`${cls} guide-min`} onClick={() => setMin(false)}>
+        시나리오 가이드 <b className="tnum">{cur.no}/{STEPS.length}</b> 열기
+      </button>
+    )
+  }
   return (
-    <>
-      <div className="scenario-bar">
-        <span className="tag">프로토타입 시나리오 가이드</span>
-        <button className="bar-btn" onClick={() => setOpen(!open)}>단계 {cur.no}/{STEPS.length} {open ? '▲' : '▼'}</button>
-        <span className="who">{roleLabel(cur.role)}</span>
-        <span className="hint">
-          {cur.exception && <span className="exc">{cur.exception}</span>}
-          {needSwitch ? `다음 행동은 ${roleLabel(cur.role)} 차례입니다. 역할을 전환하세요.` : cur.hint}
-        </span>
-        {needSwitch && <button className="bar-btn solid" onClick={() => d({ type: 'role', role: cur.role as Role })}>{roleLabel(cur.role)} 역할로 전환</button>}
-        <button className="bar-btn" onClick={() => { if (confirm('처음부터 다시 시작할까요?')) d({ type: 'reset' }) }}>처음부터</button>
+    <aside className={cls} aria-label="시나리오 가이드">
+      <div className="guide-head">
+        <span className="guide-tag">프로토타입 가이드</span>
+        <span className="tnum caption">단계 {cur.no}/{STEPS.length}</span>
+        <button className="x" onClick={() => setMin(true)} aria-label="접기">–</button>
       </div>
-      {open && (
-        <div className="steps-pop">
-          <div className="label">흐름 1 · 새 버전 등록 → 승인 → 공장별 배포</div>
-          <div className="caption">역할 인계와 예외 상태(반려, 버전 충돌)를 포함합니다.</div>
-          <ol>
-            {STEPS.map((st) => (
-              <li key={st.no} className={st.no < cur.no ? 'done' : st.no === cur.no ? 'cur' : ''}>
-                <span className="n">{st.no < cur.no ? '✓' : st.no}</span>
-                <div>
-                  {st.title} {st.exception && <Badge tone="critical">{st.exception}</Badge>}
-                  <div className="role">{roleLabel(st.role)}</div>
-                </div>
-              </li>
-            ))}
-          </ol>
+      <div className="guide-prog"><i style={{ width: `${((last ? cur.no : cur.no - 1) / STEPS.length) * 100}%` }} /></div>
+      <div className="guide-body">
+        <div className="row" style={{ gap: 6, flexWrap: 'wrap' }}>
+          <span className={`who-chip ${cur.role}`}>{roleLabel(cur.role)} 차례</span>
+          {cur.exception && <Badge tone="critical">{cur.exception}</Badge>}
         </div>
+        <div className="guide-title">{cur.no}. {cur.title}</div>
+        {needSwitch ? (
+          <>
+            <div className="guide-hint">지금은 <b>{roleLabel(s.role)}</b> 화면입니다. 다음 행동은 <b>{roleLabel(cur.role)}</b>가 합니다.</div>
+            <button className="btn btn-primary" style={{ width: '100%' }} onClick={() => d({ type: 'role', role: cur.role as Role })}>
+              {roleLabel(cur.role)} 역할로 전환
+            </button>
+          </>
+        ) : (
+          <div className="guide-hint">{cur.hint}</div>
+        )}
+      </div>
+      {list && (
+        <ol className="guide-list">
+          {STEPS.map((st) => (
+            <li key={st.no} className={st.no < cur.no || (last && st.no === cur.no) ? 'done' : st.no === cur.no ? 'cur' : ''}>
+              <span className="n">{st.no < cur.no || (last && st.no === cur.no) ? '✓' : st.no}</span>
+              <div>
+                {st.title} {st.exception && <span className="exc-mini">{st.exception}</span>}
+                <div className="role">{roleLabel(st.role)}</div>
+              </div>
+            </li>
+          ))}
+        </ol>
       )}
-    </>
+      <div className="guide-foot">
+        <button className="link" onClick={() => setList(!list)}>{list ? '전체 단계 접기' : '전체 단계 보기'}</button>
+        <button className="link" style={{ color: 'var(--ink-mute)' }} onClick={() => { if (confirm('처음부터 다시 시작할까요?')) d({ type: 'reset' }) }}>처음부터</button>
+      </div>
+    </aside>
   )
 }
 
@@ -72,7 +104,7 @@ function Lnb() {
         </>
       )}
       <div className="lnb-sep" />
-      <div className="lnb-group">공장 목록</div>
+      <div className="lnb-group">{WORKSPACE} · 공장 목록</div>
       {FACTORIES.map((f) => (
         <button key={f.id} className={`lnb-item ${v.name === 'factory' && v.id === f.id ? 'active' : ''}`} onClick={() => d({ type: 'nav', view: { name: 'factory', id: f.id } })}>
           <span className="dot" style={{ background: factoryDot(s, f.id) }} />
@@ -143,12 +175,12 @@ function FactoryPage({ id }: { id: FactoryId }) {
           <thead><tr><th>설치된 앱</th><th className="r">버전</th><th>배포 상태</th></tr></thead>
           <tbody>
             <tr>
-              <td>앱 A · 모터 진단</td>
+              <td>앱 A · 모터 진단 <span className="caption">설비 진단</span></td>
               <td className="r mono tnum">v{cur}</td>
               <td>{run ? <RunBadge run={run} /> : <Badge tone="normal">완료 · 정상 동작</Badge>}</td>
             </tr>
-            {OTHER_APPS.map((o) => (
-              <tr key={o.app}><td>{o.app}</td><td className="r mono tnum">v{o.version}</td><td><Badge tone="normal">완료 · 정상 동작</Badge></td></tr>
+            {OTHER_APPS.filter((o) => o.installed.includes(id)).map((o) => (
+              <tr key={o.app}><td>{o.app} <span className="caption">{o.category}</span></td><td className="r mono tnum">v{o.version}</td><td><Badge tone="normal">완료 · 정상 동작</Badge></td></tr>
             ))}
           </tbody>
         </table>
@@ -184,7 +216,7 @@ function Shell() {
 
   return (
     <>
-      <ScenarioBar />
+      
       <div className="shell">
         <Lnb />
         <main className="main">
@@ -201,6 +233,7 @@ function Shell() {
       {s.drawer?.type === 'fill' && <FillDrawer factory={s.drawer.factory} />}
       {s.modal?.type === 'reject' && <RejectModal id={s.modal.id} />}
       {s.modal?.type === 'run' && <RunModal />}
+      <GuidePanel />
       {s.toast && <div className="toast" key={s.toast.id}>{s.toast.text}</div>}
     </>
   )

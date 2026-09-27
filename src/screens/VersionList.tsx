@@ -1,4 +1,4 @@
-import { FACTORIES, OTHER_APPS } from '../data'
+import { FACTORIES, OTHER_APPS, WORKSPACE } from '../data'
 import { useApp } from '../store'
 import { RegBadge } from '../components/ui'
 import type { Version } from '../state'
@@ -41,6 +41,7 @@ export default function VersionList() {
         </div>
       )}
 
+      {s.role === 'admin' && <div className="caption">{WORKSPACE} · 공장 3곳 · 앱 20개 (설비 진단 · 품질 예측 · 에너지 최적화)</div>}
       <div className="table-wrap">
         <table className="tbl">
           <thead>
@@ -60,7 +61,7 @@ export default function VersionList() {
                 className={`clickable ${selectedId === v.id ? 'selected' : ''} ${s.freshId === v.id ? 'fresh' : ''}`}
                 onClick={() => d({ type: 'drawer', drawer: { type: 'version', id: v.id } })}
               >
-                <td>앱 A · 모터 진단</td>
+                <td>앱 A · 모터 진단 <span className="caption">설비 진단</span></td>
                 <td className="r mono tnum">v{v.version}</td>
                 <td><RegBadge status={v.status} /></td>
                 <td className="mute">{summary(v, s.deploy, s.factoryVersion)}</td>
@@ -71,7 +72,7 @@ export default function VersionList() {
             {s.role === 'admin' &&
               OTHER_APPS.map((o) => (
                 <tr key={o.app}>
-                  <td className="mute">{o.app}</td>
+                  <td className="mute">{o.app} <span className="caption">{o.category}</span></td>
                   <td className="r mono tnum mute">v{o.version}</td>
                   <td><RegBadge status="approved" /></td>
                   <td className="mute">{o.factories}</td>

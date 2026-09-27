@@ -76,8 +76,27 @@ export const FACTORY_ENV: Record<FactoryId, { pdx: string; mxfm: string; missing
   C: { pdx: '3.3.0', mxfm: '1.5.0', missingPermissions: ['alarm.write'], missingData: ['Motor 전류'] },
 }
 
-// 다른 앱은 배경 데이터로만 보여 준다
+export const WORKSPACE = 'Factory Group A'
+
+// 앱 A(모터 진단) 외 19개 앱은 배경 데이터로만 보여 준다 (공장 3곳 × 앱 20개 전제)
 export const OTHER_APPS = [
-  { app: '앱 B · 베어링 이상 탐지', version: '1.3.0', factories: '3곳 완료' },
-  { app: '앱 C · 펌프 캐비테이션', version: '2.2.0', factories: '2곳 완료 · 1곳 미배포' },
-]
+  { category: '설비 진단', app: '베어링 이상 탐지', version: '1.3.0', installed: ['A', 'B', 'C'] as FactoryId[] },
+  { category: '설비 진단', app: '펌프 캐비테이션 감지', version: '2.2.0', installed: ['A', 'B'] as FactoryId[] },
+  { category: '설비 진단', app: '감속기 기어 마모 진단', version: '1.8.2', installed: ['A', 'B', 'C'] as FactoryId[] },
+  { category: '설비 진단', app: '컨베이어 벨트 장력 진단', version: '1.1.4', installed: ['A', 'C'] as FactoryId[] },
+  { category: '설비 진단', app: '압축기 밸브 누설 탐지', version: '3.0.1', installed: ['A', 'B', 'C'] as FactoryId[] },
+  { category: '설비 진단', app: '팬 불균형 진단', version: '1.0.9', installed: ['B', 'C'] as FactoryId[] },
+  { category: '설비 진단', app: '변압기 절연 열화 진단', version: '2.4.0', installed: ['A', 'B', 'C'] as FactoryId[] },
+  { category: '품질 예측', app: '사출 불량 예측', version: '2.1.3', installed: ['A', 'B'] as FactoryId[] },
+  { category: '품질 예측', app: '용접 비드 품질 예측', version: '1.6.0', installed: ['A', 'B', 'C'] as FactoryId[] },
+  { category: '품질 예측', app: '도장 두께 편차 예측', version: '1.2.7', installed: ['A', 'C'] as FactoryId[] },
+  { category: '품질 예측', app: '조립 토크 이상 예측', version: '1.0.2', installed: ['A', 'B', 'C'] as FactoryId[] },
+  { category: '품질 예측', app: '치수 공차 이탈 예측', version: '2.0.0', installed: ['B'] as FactoryId[] },
+  { category: '품질 예측', app: '원료 배합 품질 예측', version: '1.4.5', installed: ['A', 'B', 'C'] as FactoryId[] },
+  { category: '에너지 최적화', app: '공조 에너지 최적화', version: '3.1.0', installed: ['A', 'B', 'C'] as FactoryId[] },
+  { category: '에너지 최적화', app: '압축 공기 누설 절감', version: '1.9.1', installed: ['A', 'B'] as FactoryId[] },
+  { category: '에너지 최적화', app: '피크 전력 예측', version: '2.3.2', installed: ['A', 'B', 'C'] as FactoryId[] },
+  { category: '에너지 최적화', app: '보일러 연소 효율 최적화', version: '1.5.0', installed: ['A', 'C'] as FactoryId[] },
+  { category: '에너지 최적화', app: '냉각수 펌프 인버터 제어', version: '1.0.6', installed: ['B', 'C'] as FactoryId[] },
+  { category: '에너지 최적화', app: '설비 대기전력 차단 추천', version: '1.1.0', installed: ['A', 'B', 'C'] as FactoryId[] },
+].map((a) => ({ ...a, factories: a.installed.length === 3 ? '3곳 완료' : `${a.installed.length}곳 완료 · ${3 - a.installed.length}곳 미배포` }))

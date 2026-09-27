@@ -32,7 +32,7 @@
   --scrim: rgba(13, 37, 61, 0.32);
   --font: "Pretendard Variable", Pretendard, Inter, system-ui, sans-serif;
   --mono: "JetBrains Mono", SFMono-Regular, Consolas, monospace;
-  --bar-h: 48px;
+  --bar-h: 0px;
 }
 
 * { box-sizing: border-box; }
@@ -281,9 +281,44 @@ textarea:focus, input:focus { outline: 2px solid var(--primary-subtle-border); b
 .empty-state { text-align: center; padding: 48px 16px; color: var(--ink-mute); display: flex; flex-direction: column; align-items: center; gap: 12px; }
 
 .toast {
-  position: fixed; right: 24px; bottom: 24px; z-index: 80; background: var(--brand-dark-900); color: #fff;
+  position: fixed; left: 264px; bottom: 24px; z-index: 80; background: var(--brand-dark-900); color: #fff;
   border-radius: 8px; padding: 12px 16px; box-shadow: var(--shadow-2); font-size: 13px; animation: slide .2s ease-out; max-width: 420px;
 }
 .hint-note { font-size: 12px; color: var(--ink-mute); border-left: 2px dashed var(--primary-subtle-border); padding-left: 8px; }
 .final { border: 1px solid #b5e2cf; background: var(--normal-bg); border-radius: 12px; padding: 20px 24px; display: flex; gap: 16px; align-items: center; }
 .final .big { width: 40px; height: 40px; border-radius: 50%; background: var(--normal); color: #fff; display: grid; place-items: center; font-size: 20px; flex: none; }
+
+/* ---------- Guide panel (prototype only) ---------- */
+.guide {
+  position: fixed; right: 24px; bottom: 24px; z-index: 90; width: 340px;
+  background: var(--canvas); border: 2px solid var(--primary); border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(83, 58, 253, 0.28), var(--shadow-2);
+  transition: right .2s ease;
+}
+.guide.shifted { right: 484px; }
+.guide.pulse { animation: pulse 1.2s ease-out; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(83,58,253,.55), var(--shadow-2); } 100% { box-shadow: 0 0 0 16px rgba(83,58,253,0), 0 12px 32px rgba(83,58,253,.28); } }
+.guide-min { padding: 12px 18px; width: auto; cursor: pointer; background: var(--primary); color: #fff; border-radius: 9999px; font-size: 13px; }
+.guide-min b { font-weight: 500; margin: 0 4px; }
+.guide-head { display: flex; align-items: center; gap: 8px; padding: 12px 12px 8px 16px; }
+.guide-tag { background: var(--primary); color: #fff; border-radius: 9999px; padding: 2px 10px; font-size: 12px; font-weight: 500; }
+.guide-prog { height: 4px; background: var(--canvas-sunken); margin: 0 16px; border-radius: 9999px; overflow: hidden; }
+.guide-prog i { display: block; height: 100%; background: var(--primary); transition: width .4s ease; }
+.guide-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+.guide-title { font-size: 16px; font-weight: 500; letter-spacing: -0.2px; }
+.guide-hint { font-size: 13px; color: var(--ink-secondary); line-height: 1.55; }
+.guide-hint b { font-weight: 500; color: var(--ink); }
+.who-chip { border-radius: 9999px; padding: 2px 10px; font-size: 12px; font-weight: 500; }
+.who-chip.am { background: #e6f1fd; color: #135ba1; }
+.who-chip.admin { background: var(--brand-dark-900); color: #fff; }
+.who-chip.system { background: var(--canvas-sunken); color: var(--ink-mute); }
+.guide-list { list-style: none; margin: 0; padding: 8px 16px; border-top: 1px solid var(--hairline); max-height: 260px; overflow-y: auto; }
+.guide-list li { display: flex; gap: 10px; padding: 5px 0; font-size: 13px; align-items: flex-start; }
+.guide-list li .n { flex: none; width: 20px; height: 20px; border-radius: 50%; border: 1px solid var(--hairline); display: grid; place-items: center; font-size: 11px; color: var(--ink-mute); }
+.guide-list li.done { color: var(--ink-mute); }
+.guide-list li.done .n { background: var(--normal-bg); border-color: var(--normal); color: var(--normal); }
+.guide-list li.cur { font-weight: 500; }
+.guide-list li.cur .n { background: var(--primary); border-color: var(--primary); color: #fff; }
+.guide-list .role { font-size: 12px; color: var(--ink-mute); font-weight: 400; }
+.exc-mini { color: var(--critical); font-size: 11px; margin-left: 4px; }
+.guide-foot { display: flex; justify-content: space-between; padding: 10px 16px 12px; border-top: 1px solid var(--hairline); }

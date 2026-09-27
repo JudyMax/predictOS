@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FACTORIES, USERS, type FactoryId } from '../data'
+import { FACTORIES, INITIAL_FACTORY_VERSION, OTHER_APPS, USERS, WORKSPACE, type FactoryId } from '../data'
 import { useApp } from '../store'
 import { checkAll, type CheckResult, type Run } from '../state'
 import { Badge, Ico, RunBadge, Stepper } from '../components/ui'
@@ -60,14 +60,80 @@ function progress(r: Run) {
   return { pct: 35 + r.health * 15 + (r.dataReceived ? 10 : 0), text: `설치 완료 · 헬스체크 ${r.health}/3 · ${r.dataReceived ? '데이터 수신 확인' : '데이터 수신 대기'}` }
 }
 
-export default function DeployPage() {
+function Tabs({ tab }: { tab: 'status' | 'run' }) {
+  const { s, d } = useApp()
+  const v = s.versions.find((x) => x.id === s.deploy.versionId)
+  return (
+    <div className="tabs">
+      <button className={tab === 'status' ? 'on' : ''} onClick={() => d({ type: 'nav', view: { name: 'deploy', tab: 'status' } })}>공장별 배포 현황</button>
+      <button className={tab === 'run' ? 'on' : ''} onClick={() => d({ type: 'nav', view: { name: 'deploy', tab: 'run' } })}>
+        배포하기{v ? ` · 모터 진단 v${v.version}` : ''}
+      </button>
+    </div>
+  )
+}
+
+function cellFor(s: ReturnType<typeof useApp>['s'], vid: string, version: string, f: FactoryId) {
+  if (s.deploy.versionId === vid && s.deploy.runs[f]) return <RunBadge run={s.deploy.runs[f]} />
+  if (s.factoryVersion[f] === version) return <Badge tone="normal">완료 · 정상 동작</Badge>
+  if (INITIAL_FACTORY_VERSION[f] === version) return <Badge tone="stopped">v{s.factoryVersion[f]}로 교체됨</Badge>
+  return <span className="caption">이력 없음</span>
+}
+
+function DeployStatus() {
+  const { s, d } = useApp()
+  const approved = s.versions.filter((v) => v.status === 'approved')
+  return (
+    <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div className="between">
+        <h2>버전×공장 배포 현황</h2>
+        <span className="caption">{WORKSPACE} · 공장 3곳 · 앱 20개 · 승인된 버전만 표시</span>
+      </div>
+      <div className="table-wrap">
+        <table className="tbl">
+          <thead>
+            <tr><th>앱</th><th>분류</th><th className="r">버전</th>{FACTORIES.map((f) => <th key={f.id}>{f.name}</th>)}</tr>
+          </thead>
+          <tbody>
+            {approved.map((v) => (
+              <tr key={v.id} className={v.manifest ? 'clickable selected' : ''} onClick={v.manifest ? () => d({ type: 'nav', view: { name: 'deploy', tab: 'run' } }) : undefined}>
+                <td>모터 진단</td><td className="mute">설비 진단</td><td className="r mono tnum">v{v.version}</td>
+                {FACTORIES.map((f) => <td key={f.id}>{cellFor(s, v.id, v.version, f.id)}</td>)}
+              </tr>
+            ))}
+            {OTHER_APPS.map((o) => (
+              <tr key={o.app}>
+                <td>{o.app}</td><td className="mute">{o.category}</td><td className="r mono tnum">v{o.version}</td>
+                {FACTORIES.map((f) => (
+                  <td key={f.id}>{o.installed.includes(f.id) ? <Badge tone="normal">완료 · 정상 동작</Badge> : <span className="caption">이력 없음</span>}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="caption">배포 상태는 승인된 버전×공장 조합마다 하나씩 기록됩니다. 새 배포는 앱 버전 관리에서 승인된 버전의 '배포하기'로 시작합니다.</div>
+    </div>
+  )
+}
+
+export default function DeployPage({ tab }: { tab: 'status' | 'run' }) {
+  return (
+    <>
+      <Tabs tab={tab} />
+      {tab === 'status' ? <DeployStatus /> : <DeployRun />}
+    </>
+  )
+}
+
+function DeployRun() {
   const { s, d } = useApp()
   const v = s.versions.find((x) => x.id === s.deploy.versionId)
 
   if (!v?.manifest) {
     return (
       <div className="card empty-state">
-        <div>배포할 버전이 선택되지 않았습니다. 앱 버전 관리에서 승인된 버전의 '배포하기'로 시작하세요.</div>
+        <div>배포할 버전이 선택되지 않았습니다. 새 배포는 앱 버전 관리에서 승인된 버전의 '배포하기'로 시작합니다.</div>
         <button className="btn btn-secondary" onClick={() => d({ type: 'nav', view: { name: 'versions' } })}>앱 버전 관리로 이동</button>
       </div>
     )

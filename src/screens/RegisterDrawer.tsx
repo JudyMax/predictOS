@@ -53,7 +53,7 @@ export default function RegisterDrawer({ resubmitOf }: { resubmitOf?: string }) 
   return (
     <Drawer
       title={resubmitOf ? '재제출' : '새 버전 등록'}
-      sub={resubmitOf ? '재제출 대상: 모터 진단 v2.0.1' : '모터 진단'}
+      sub={resubmitOf ? '재제출 대상: 모터 진단 v2.0.1' : '대상 앱은 패치 파일의 앱 ID로 자동 식별됩니다'}
       onClose={close}
       foot={
         <>
@@ -88,6 +88,13 @@ export default function RegisterDrawer({ resubmitOf }: { resubmitOf?: string }) 
           </div>
           {!reading && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div className="banner info">
+                <span>●</span>
+                <div>
+                  대상 앱 <b>모터 진단</b> <span className="mono">({sample.appId})</span> · 설비 진단
+                  <div className="tnum" style={{ marginTop: 2 }}>승인된 최신 <span className="mono">v1.1.1</span> → 새 버전 <span className="mono">v{sample.version}</span></div>
+                </div>
+              </div>
               <div className="label">읽어 온 등록 정보 <span className="caption">(읽기 전용)</span></div>
               <ManifestView m={sample} highlight={resubmitOf ? 'releaseNote' : undefined} />
               {resubmitOf && <div className="caption">노란 칸: 이전 제출본과 달라진 항목</div>}

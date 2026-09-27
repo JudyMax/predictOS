@@ -322,3 +322,7 @@ textarea:focus, input:focus { outline: 2px solid var(--primary-subtle-border); b
 .guide-list .role { font-size: 12px; color: var(--ink-mute); font-weight: 400; }
 .exc-mini { color: var(--critical); font-size: 11px; margin-left: 4px; }
 .guide-foot { display: flex; justify-content: space-between; padding: 10px 16px 12px; border-top: 1px solid var(--hairline); }
+
+.tabs { display: flex; gap: 24px; border-bottom: 1px solid var(--hairline); margin-top: -8px; }
+.tabs button { background: none; border: 0; padding: 10px 0; color: var(--ink-mute); cursor: pointer; font-size: 14px; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.tabs button.on { color: var(--ink); font-weight: 500; border-bottom-color: var(--primary); }

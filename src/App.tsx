@@ -98,7 +98,7 @@ function Lnb() {
       <button className={`lnb-item ${v.name === 'versions' ? 'active' : ''}`} onClick={() => d({ type: 'nav', view: { name: 'versions' } })}>앱 버전 관리</button>
       {s.role === 'admin' && (
         <>
-          <button className={`lnb-item ${v.name === 'deploy' ? 'active' : ''}`} onClick={() => d({ type: 'nav', view: { name: 'deploy' } })}>배포 관리</button>
+          <button className={`lnb-item ${v.name === 'deploy' ? 'active' : ''}`} onClick={() => d({ type: 'nav', view: { name: 'deploy', tab: 'status' } })}>배포 관리</button>
           <button className="lnb-item" disabled title="이번 프로토타입 범위 밖">권한 관리<span className="soon">범위 밖</span></button>
           <button className="lnb-item" disabled title="이번 프로토타입 범위 밖">변경 기록<span className="soon">범위 밖</span></button>
         </>
@@ -223,7 +223,7 @@ function Shell() {
           <Header title={title} action={action} />
           <div className="content">
             {v.name === 'versions' && <VersionList />}
-            {v.name === 'deploy' && <DeployPage />}
+            {v.name === 'deploy' && <DeployPage tab={v.tab} />}
             {v.name === 'factory' && <FactoryPage id={v.id} />}
           </div>
         </main>

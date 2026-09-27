@@ -33,7 +33,7 @@ export type Drawer =
   | { type: 'fill'; factory: FactoryId }
   | null
 export type Modal = { type: 'reject'; id: string } | { type: 'run' } | null
-export type View = { name: 'versions' } | { name: 'deploy' } | { name: 'factory'; id: FactoryId }
+export type View = { name: 'versions' } | { name: 'deploy'; tab: 'status' | 'run' } | { name: 'factory'; id: FactoryId }
 export type Notice = { id: number; role: Role; text: string; versionId: string; read: boolean }
 
 export type State = {
@@ -215,7 +215,7 @@ export function reducer(s: State, a: Action): State {
     }
     case 'startDeploy':
       return {
-        ...s, view: { name: 'deploy' }, drawer: null, modal: null,
+        ...s, view: { name: 'deploy', tab: 'run' }, drawer: null, modal: null,
         deploy: { ...s.deploy, versionId: a.id, selected: [], checked: false, runs: {}, executedAt: null },
       }
     case 'toggleFactory': {

@@ -363,3 +363,7 @@ textarea:focus, input:focus { outline: 2px solid var(--primary-subtle-border); b
 .content > .tabs:first-child { margin: -24px -32px 4px; padding: 0 32px; background: var(--canvas); border-bottom: 1px solid var(--hairline); }
 .main:has(.content > .tabs:first-child) .header { border-bottom: 0; }
 .tabs button { font-size: 13px; }
+.lnb-apps { display: flex; flex-direction: column; margin: 2px 0 0 12px; border-left: 1px solid var(--primary-subtle-border); padding-left: 4px; }
+.lnb-app { display: flex; align-items: center; gap: 6px; text-align: left; background: none; border: 0; border-radius: 6px; padding: 5px 10px 5px 16px; font-size: 12px; color: var(--ink-secondary); cursor: pointer; }
+.lnb-app:hover { background: rgba(83, 58, 253, 0.08); color: var(--primary-deep); }
+.lnb-app .lock { margin-left: auto; font-size: 11px; color: var(--ink-mute); border: 1px solid var(--hairline); border-radius: 9999px; padding: 0 6px; }

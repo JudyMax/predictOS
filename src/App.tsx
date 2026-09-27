@@ -141,7 +141,13 @@ function Lnb() {
       {FACTORIES.filter((f) => s.role !== 'op' || f.id === 'A').map((f) => {
         const isOpen = !!open[f.id]
         const active = v.name === 'factory' && v.id === f.id
-        const count = s.role === 'am' ? 1 : 1 + OTHER_APPS.filter((o) => o.installed.includes(f.id)).length
+        const apps = s.role === 'am' ? ['모터 진단'] : ['모터 진단', ...OTHER_APPS.filter((o) => o.installed.includes(f.id)).map((o) => o.app)]
+        const count = apps.length
+        const locked = (app: string) => s.role === 'op' && !(s.grants[ME.op] ?? []).includes(app)
+        const openApp = (app: string) =>
+          locked(app)
+            ? d({ type: 'modal', modal: { type: 'usage', app } })
+            : d({ type: 'toast', text: `${app} 모니터링 대시보드는 이번 프로토타입의 구현 범위 밖입니다` })
         return (
           <div key={f.id} className={`tree ${isOpen ? 'open' : ''}`}>
             <button className="lnb-item folder" onClick={() => setOpen({ ...open, [f.id]: !isOpen })}>
@@ -150,9 +156,18 @@ function Lnb() {
               <span className="chev-r">{isOpen ? '⌃' : '⌄'}</span>
             </button>
             {isOpen && (
-              <button className={`lnb-sub ${active ? 'active' : ''}`} onClick={() => d({ type: 'nav', view: { name: 'factory', id: f.id } })}>
-                설치된 앱 <span className="caption">{f.site}</span>
-              </button>
+              <>
+                <button className={`lnb-sub ${active ? 'active' : ''}`} onClick={() => d({ type: 'nav', view: { name: 'factory', id: f.id } })}>
+                  설치된 앱 현황 <span className="caption">{f.site}</span>
+                </button>
+                <div className="lnb-apps">
+                  {apps.map((a) => (
+                    <button key={a} className="lnb-app" onClick={() => openApp(a)} title={locked(a) ? '사용 권한 없음 · 눌러서 요청' : '앱 모니터링 (구현 범위 밖)'}>
+                      {a}{locked(a) && <span className="lock">잠김</span>}
+                    </button>
+                  ))}
+                </div>
+              </>
             )}
           </div>
         )
@@ -260,7 +275,7 @@ function FactoryPage({ id }: { id: FactoryId }) {
 function Shell() {
   const { s, d } = useApp()
   const v = s.view
-  const title = v.name === 'versions' ? '앱 버전 관리' : v.name === 'deploy' ? '배포 관리' : v.name === 'access' ? '권한 관리' : v.name === 'audit' ? '변경 기록' : FACTORIES.find((f) => f.id === v.id)!.name
+  const title = v.name === 'versions' ? '앱 버전 관리' : v.name === 'deploy' ? '배포 관리' : v.name === 'access' ? '권한 관리' : v.name === 'audit' ? '변경 기록' : `${FACTORIES.find((f) => f.id === v.id)!.name} · 설치된 앱 현황`
   const action = v.name === 'versions' && s.role === 'am'
     ? <button className="btn btn-primary" onClick={() => d({ type: 'drawer', drawer: { type: 'register' } })}>새 버전 등록</button>
     : undefined

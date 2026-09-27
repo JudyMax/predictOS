@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { FACTORIES, INITIAL_FACTORY_VERSION, OTHER_APPS, USERS, WORKSPACE, type FactoryId } from '../data'
 import { useApp } from '../store'
-import { checkAll, type CheckResult, type Run } from '../state'
+import { checkAll, cmpVer, type CheckResult, type Run } from '../state'
 import { Badge, Ico, RunBadge, Stepper } from '../components/ui'
 
 const STEP_LABELS = ['공장 선택', '사전 환경 검증', '부족 항목 채우기', '실행·정상 동작 확인']
@@ -80,32 +80,67 @@ function cellFor(s: ReturnType<typeof useApp>['s'], vid: string, version: string
   return <span className="caption">이력 없음</span>
 }
 
+function RunningCell({ version, latest, run }: { version?: string; latest: string; run?: Run }) {
+  if (run && run.phase !== 'done') return <div className="cell-stack"><RunBadge run={run} /><span className="caption mono">v{version} → v{latest}</span></div>
+  if (!version) return <span className="caption">미설치</span>
+  const isLatest = version === latest
+  return (
+    <div className="cell-stack">
+      <span className="mono tnum">v{version}</span>
+      {isLatest ? <Badge tone="normal">정상 동작</Badge> : <Badge tone="caution">최신 아님</Badge>}
+    </div>
+  )
+}
+
 function DeployStatus() {
-  const { s, d } = useApp()
+  const { s } = useApp()
+  const [open, setOpen] = useState<Record<string, boolean>>({ motor: true })
   const approved = s.versions.filter((v) => v.status === 'approved')
+  const latest = [...approved].sort((x, y) => cmpVer(y.version, x.version))[0]
+  const toggle = (k: string) => setOpen((o) => ({ ...o, [k]: !o[k] }))
   return (
     <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div className="between">
-        <h2>버전×공장 배포 현황</h2>
-        <span className="caption">{WORKSPACE} · 공장 3곳 · 앱 20개 · 승인된 버전만 표시</span>
+        <h2>공장별 운영 버전</h2>
+        <span className="caption">{WORKSPACE} · 공장 3곳 · 앱 20개</span>
       </div>
+      <div className="caption" style={{ marginTop: -8 }}>공장 칸은 지금 그 공장에서 운영 중인 버전입니다. 앱 행을 누르면 버전별 배포 이력이 펼쳐집니다.</div>
       <div className="table-wrap">
         <table className="tbl">
           <thead>
-            <tr><th>앱</th><th>분류</th><th className="r">버전</th>{FACTORIES.map((f) => <th key={f.id}>{f.name}</th>)}</tr>
+            <tr><th>앱</th><th>분류</th><th className="r">최신 승인 버전</th>{FACTORIES.map((f) => <th key={f.id}>{f.name}</th>)}</tr>
           </thead>
           <tbody>
-            {approved.map((v) => (
-              <tr key={v.id} className={v.manifest ? 'clickable selected' : ''} onClick={v.manifest ? () => d({ type: 'nav', view: { name: 'deploy', tab: 'run' } }) : undefined}>
-                <td>모터 진단</td><td className="mute">설비 진단</td><td className="r mono tnum">v{v.version}</td>
-                {FACTORIES.map((f) => <td key={f.id}>{cellFor(s, v.id, v.version, f.id)}</td>)}
-              </tr>
-            ))}
+            <tr className="clickable" onClick={() => toggle('motor')}>
+              <td><span className="chev">{open.motor ? '▾' : '▸'}</span>모터 진단</td>
+              <td className="mute">설비 진단</td>
+              <td className="r mono tnum">v{latest.version}</td>
+              {FACTORIES.map((f) => (
+                <td key={f.id}>
+                  <RunningCell version={s.factoryVersion[f.id]} latest={latest.version} run={s.deploy.versionId === latest.id ? s.deploy.runs[f.id] : undefined} />
+                </td>
+              ))}
+            </tr>
+            {open.motor && (
+              <>
+                <tr className="sub-head"><td colSpan={6}>버전별 배포 이력</td></tr>
+                {[...approved].sort((x, y) => cmpVer(y.version, x.version)).map((v) => (
+                  <tr key={v.id} className="sub-row">
+                    <td className="mono tnum" style={{ paddingLeft: 40 }}>v{v.version}</td>
+                    <td className="caption">{v.approvedBy ? `승인 ${v.approvedBy}` : ''}</td>
+                    <td />
+                    {FACTORIES.map((f) => <td key={f.id}>{cellFor(s, v.id, v.version, f.id)}</td>)}
+                  </tr>
+                ))}
+              </>
+            )}
             {OTHER_APPS.map((o) => (
-              <tr key={o.app}>
-                <td>{o.app}</td><td className="mute">{o.category}</td><td className="r mono tnum">v{o.version}</td>
+              <tr key={o.app} className="clickable" onClick={() => toggle(o.app)}>
+                <td><span className="chev">{open[o.app] ? '▾' : '▸'}</span>{o.app}</td>
+                <td className="mute">{o.category}</td>
+                <td className="r mono tnum">v{o.version}</td>
                 {FACTORIES.map((f) => (
-                  <td key={f.id}>{o.installed.includes(f.id) ? <Badge tone="normal">완료 · 정상 동작</Badge> : <span className="caption">이력 없음</span>}</td>
+                  <td key={f.id}><RunningCell version={o.installed.includes(f.id) ? o.version : undefined} latest={o.version} /></td>
                 ))}
               </tr>
             ))}

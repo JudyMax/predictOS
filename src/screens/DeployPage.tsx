@@ -94,25 +94,24 @@ function RunningCell({ version, latest, run }: { version?: string; latest: strin
 
 function DeployStatus() {
   const { s } = useApp()
-  const [open, setOpen] = useState<Record<string, boolean>>({ motor: true })
+  const [open, setOpen] = useState(true)
   const approved = s.versions.filter((v) => v.status === 'approved')
   const latest = [...approved].sort((x, y) => cmpVer(y.version, x.version))[0]
-  const toggle = (k: string) => setOpen((o) => ({ ...o, [k]: !o[k] }))
   return (
     <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div className="between">
         <h2>공장별 운영 버전</h2>
         <span className="caption">{WORKSPACE} · 공장 3곳 · 앱 20개</span>
       </div>
-      <div className="caption" style={{ marginTop: -8 }}>공장 칸은 지금 그 공장에서 운영 중인 버전입니다. 앱 행을 누르면 버전별 배포 이력이 펼쳐집니다.</div>
+      <div className="caption" style={{ marginTop: -8 }}>공장 칸은 지금 그 공장에서 운영 중인 버전입니다. 버전이 여러 개인 앱은 행을 눌러 버전별 배포 이력을 펼칩니다.</div>
       <div className="table-wrap">
         <table className="tbl">
           <thead>
             <tr><th>앱</th><th>분류</th><th className="r">최신 승인 버전</th>{FACTORIES.map((f) => <th key={f.id}>{f.name}</th>)}</tr>
           </thead>
           <tbody>
-            <tr className="clickable" onClick={() => toggle('motor')}>
-              <td><span className="chev">{open.motor ? '▾' : '▸'}</span>모터 진단</td>
+            <tr className="clickable" onClick={() => setOpen(!open)}>
+              <td><span className="chev">{open ? '▾' : '▸'}</span>모터 진단</td>
               <td className="mute">설비 진단</td>
               <td className="r mono tnum">v{latest.version}</td>
               {FACTORIES.map((f) => (
@@ -121,7 +120,7 @@ function DeployStatus() {
                 </td>
               ))}
             </tr>
-            {open.motor && (
+            {open && (
               <>
                 <tr className="sub-head"><td colSpan={6}>버전별 배포 이력</td></tr>
                 {[...approved].sort((x, y) => cmpVer(y.version, x.version)).map((v) => (
@@ -135,8 +134,8 @@ function DeployStatus() {
               </>
             )}
             {OTHER_APPS.map((o) => (
-              <tr key={o.app} className="clickable" onClick={() => toggle(o.app)}>
-                <td><span className="chev">{open[o.app] ? '▾' : '▸'}</span>{o.app}</td>
+              <tr key={o.app}>
+                <td><span className="chev" />{o.app}</td>
                 <td className="mute">{o.category}</td>
                 <td className="r mono tnum">v{o.version}</td>
                 {FACTORIES.map((f) => (

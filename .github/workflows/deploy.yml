@@ -25,6 +25,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+        env:
+          BASE_PATH: /predictOS/
       # 와이어프레임은 docs/의 단일 HTML을 그대로 /wireframe/ 경로로 함께 배포한다
       - run: |
           mkdir -p dist/wireframe

@@ -331,3 +331,11 @@ textarea:focus, input:focus { outline: 2px solid var(--primary-subtle-border); b
 .chev { display: inline-block; width: 16px; color: var(--ink-mute); font-size: 11px; }
 .tbl tr.sub-head td { height: auto; padding: 6px 16px 6px 40px; background: var(--canvas-soft); font-size: 12px; color: var(--ink-mute); }
 .tbl tr.sub-row td { background: var(--canvas-soft); height: 40px; }
+
+.err { color: var(--critical); font-size: 12px; margin-top: 2px; }
+.sim-box { border: 1px dashed var(--primary-subtle-border); border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; background: var(--canvas); }
+.sim-link { font-weight: 400; color: var(--ink-mute); border-bottom: 1px dashed var(--hairline-input); }
+.pbar.fail > i { background: var(--critical); }
+.guide-list li.extra { border-top: 1px dashed var(--hairline); margin-top: 6px; padding-top: 10px; }
+.guide-list li.extra b { font-weight: 500; }
+.role-switch button { padding: 4px 10px; font-size: 12px; }

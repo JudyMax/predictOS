@@ -10,8 +10,20 @@ export default function VersionDrawer({ id }: { id: string }) {
   const isAdmin = s.role === 'admin'
   const deployedHere = s.deploy.versionId === v.id && s.deploy.executedAt
 
+  const conflict = s.conflict?.id === v.id ? s.conflict : null
+  const failedFs = deployedHere ? FACTORIES.filter((f) => s.deploy.runs[f.id]?.phase === 'failed') : []
   let foot = null
-  if (isAdmin && v.status === 'pending') {
+  if (isAdmin && conflict) {
+    foot = (
+      <>
+        <span className="caption" style={{ marginRight: 'auto' }}>승인 대기 상태가 아니라 승인·반려할 수 없습니다</span>
+        <button className="btn" disabled>반려</button>
+        <button className="btn" disabled>승인</button>
+      </>
+    )
+  } else if (!isAdmin && failedFs.length) {
+    foot = <button className="btn btn-primary" onClick={() => d({ type: 'toast', text: '프로토타입: 새 버전(v2.0.2) 등록은 1단계와 같은 흐름입니다' })}>새 버전 등록</button>
+  } else if (isAdmin && v.status === 'pending') {
     foot = (
       <>
         <button className="btn btn-danger" onClick={() => d({ type: 'modal', modal: { type: 'reject', id: v.id } })}>반려</button>
@@ -31,6 +43,35 @@ export default function VersionDrawer({ id }: { id: string }) {
       onClose={close}
       foot={foot}
     >
+      {conflict && (
+        <div className="banner critical">
+          <span>●</span>
+          <div>
+            <b>다른 Platform Admin이 이미 처리했습니다.</b> 내 승인·반려는 반영되지 않았습니다.
+            <div className="tnum" style={{ marginTop: 2 }}>최신 상태: 승인됨 · 처리자 {conflict.by} · {conflict.at}</div>
+          </div>
+        </div>
+      )}
+      {failedFs.length > 0 && (
+        <div className="banner critical">
+          <span>●</span>
+          <div>
+            <b>{failedFs.map((f) => f.name).join('·')} 배포 실패</b> · 이전 버전 유지 중
+            <div style={{ marginTop: 2 }}>실패 사유: 정상 동작 확인 기준 미충족 (헬스체크 실패)</div>
+            <div className="caption" style={{ marginTop: 6, color: 'inherit' }}>실패한 버전은 그 공장에 다시 실행하지 않습니다. 다시 시도하려면 원인을 고친 새 버전을 등록해야 합니다.</div>
+          </div>
+        </div>
+      )}
+      {isAdmin && v.status === 'pending' && (
+        <div className="sim-box">
+          <div className="caption">예외 확인용 시뮬레이션 (동시 검토 충돌)</div>
+          {s.raceArmed === v.id ? (
+            <div style={{ fontSize: 13 }}>준비됨: 다른 Admin(한도윤)이 방금 이 등록을 승인했습니다. 이제 승인이나 반려를 눌러 보세요.</div>
+          ) : (
+            <button className="link" style={{ alignSelf: 'flex-start' }} onClick={() => d({ type: 'armRace', id: v.id })}>다른 Platform Admin이 먼저 승인한 상황 만들기</button>
+          )}
+        </div>
+      )}
       {v.status === 'rejected' && (
         <div className="banner critical">
           <span>●</span>

@@ -57,6 +57,7 @@ function CheckRow({ f, c, current, target }: { f: FactoryId; c: CheckResult; cur
 function progress(r: Run) {
   if (r.phase === 'installing') return { pct: 20, text: '패키지 설치 중' }
   if (r.phase === 'done') return { pct: 100, text: '헬스체크 3/3 · 데이터 수신 확인' }
+  if (r.phase === 'failed') return { pct: 100, text: '헬스체크 실패 · 정상 동작 확인 기준 미충족' }
   return { pct: 35 + r.health * 15 + (r.dataReceived ? 10 : 0), text: `설치 완료 · 헬스체크 ${r.health}/3 · ${r.dataReceived ? '데이터 수신 확인' : '데이터 수신 대기'}` }
 }
 
@@ -81,6 +82,7 @@ function cellFor(s: ReturnType<typeof useApp>['s'], vid: string, version: string
 }
 
 function RunningCell({ version, latest, run }: { version?: string; latest: string; run?: Run }) {
+  if (run?.phase === 'failed') return <div className="cell-stack"><span className="mono tnum">v{version}</span><Badge tone="critical">v{latest} 배포 실패</Badge></div>
   if (run && run.phase !== 'done') return <div className="cell-stack"><RunBadge run={run} /><span className="caption mono">v{version} → v{latest}</span></div>
   if (!version) return <span className="caption">미설치</span>
   const isLatest = version === latest
@@ -179,7 +181,9 @@ function DeployRun() {
   const hasShortage = selected.some((f) => checks[f]?.result === 'shortage')
   const runs = s.deploy.runs
   const executed = !!s.deploy.executedAt
-  const allDone = executed && Object.values(runs).every((r) => r?.phase === 'done')
+  const allDone = executed && Object.values(runs).every((r) => r?.phase === 'done' || r?.phase === 'failed')
+  const failedFs = FACTORIES.filter((f) => runs[f.id]?.phase === 'failed')
+  const okFs = FACTORIES.filter((f) => runs[f.id]?.phase === 'done')
   const step = executed ? (allDone ? 5 : 4) : !s.deploy.checked ? 1 : hasShortage ? 3 : 4
   const excluded = FACTORIES.filter((f) => !runs[f.id])
 
@@ -248,11 +252,20 @@ function DeployRun() {
 
       {executed && (
         <>
-          {allDone && (
+          {failedFs.length > 0 && (
+            <div className="banner critical">
+              <span>●</span>
+              <div style={{ flex: 1 }}>
+                <b>{failedFs.map((f) => f.name).join('·')} 배포 실패</b> · 이전 버전 {failedFs.map((f) => `v${s.factoryVersion[f.id]}`).join('·')} 유지 중. 사유: 정상 동작 확인 기준 미충족.
+                <div className="caption" style={{ color: 'inherit', marginTop: 2 }}>자동 재시도는 없고, 실패한 버전은 그 공장에 다시 실행하지 않습니다. 다시 시도하려면 원인을 고친 새 버전을 등록해야 합니다. Admin과 등록자에게 알림함으로 알렸습니다.</div>
+              </div>
+            </div>
+          )}
+          {allDone && okFs.length > 0 && (
             <div className="final">
               <div className="big">✓</div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 16, fontWeight: 500 }}>{Object.keys(runs).map((f) => `공장 ${f}`).join('·')}에서 v{v.version}이 정상 동작 중입니다</div>
+                <div style={{ fontSize: 16, fontWeight: 500 }}>{okFs.map((f) => f.name).join('·')}에서 v{v.version}이 정상 동작 중입니다</div>
                 {excluded.length > 0 && (
                   <div className="caption" style={{ marginTop: 4, fontSize: 13 }}>
                     {excluded.map((f) => `${f.name}는 v${s.factoryVersion[f.id]}를 유지합니다`).join(' · ')}. 선행 버전을 먼저 배포한 뒤 다시 검증하세요.
@@ -288,11 +301,11 @@ function DeployRun() {
                     return (
                       <tr key={f.id}>
                         <td>{f.name}</td>
-                        <td className="mono tnum">{r.phase === 'done' ? `v${v.version}` : `v${s.factoryVersion[f.id]} → v${v.version}`}</td>
+                        <td className="mono tnum">{r.phase === 'done' ? `v${v.version}` : r.phase === 'failed' ? `v${s.factoryVersion[f.id]} 유지` : `v${s.factoryVersion[f.id]} → v${v.version}`}</td>
                         <td><RunBadge run={r} /></td>
                         <td>
                           <div className="progress-cell">
-                            <div className={`pbar ${r.phase === 'done' ? 'ok' : ''}`}><i style={{ width: `${p.pct}%` }} /></div>
+                            <div className={`pbar ${r.phase === 'done' ? 'ok' : r.phase === 'failed' ? 'fail' : ''}`}><i style={{ width: `${p.pct}%` }} /></div>
                             <span className="caption">{p.text}</span>
                           </div>
                         </td>

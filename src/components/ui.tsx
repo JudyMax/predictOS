@@ -22,6 +22,7 @@ export function RunBadge({ run }: { run?: Run }) {
   if (!run) return <Badge tone="stopped">미배포</Badge>
   if (run.phase === 'installing') return <Badge tone="progress" spin>설치 중</Badge>
   if (run.phase === 'verifying') return <Badge tone="progress" spin>동작 확인 중</Badge>
+  if (run.phase === 'failed') return <Badge tone="critical">실패 · 이전 버전 유지</Badge>
   return <Badge tone="normal">완료 · 정상 동작</Badge>
 }
 

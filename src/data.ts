@@ -1,9 +1,10 @@
-export type Role = 'am' | 'admin'
+export type Role = 'am' | 'admin' | 'op'
 export type FactoryId = 'A' | 'B' | 'C'
 
 export const USERS: Record<Role, { name: string; title: string; initial: string }> = {
   am: { name: '정하늘', title: 'Application Manager', initial: '하' },
   admin: { name: '윤서진', title: 'Platform Admin', initial: '서' },
+  op: { name: '강민재', title: 'Plant Operator', initial: '민' },
 }
 
 export const FACTORIES: { id: FactoryId; name: string; site: string }[] = [

@@ -73,10 +73,19 @@ function GuidePanel() {
               </div>
             </li>
           ))}
+          <li className="extra">
+            <div>
+              <b>추가 예외 둘러보기</b>
+              <div className="role">등록 검증 실패: 새 버전 등록 드로어의 '형식 오류 샘플'</div>
+              <div className="role">동시 검토 충돌: 승인 대기 버전 상세의 시뮬레이션</div>
+              <div className="role">배포 실패: 배포 실행 확인 모달의 시뮬레이션</div>
+              <div className="role">Plant Operator: 역할 전환에서 선택, 소속 공장만 보임</div>
+            </div>
+          </li>
         </ol>
       )}
       <div className="guide-foot">
-        <button className="link" onClick={() => setList(!list)}>{list ? '전체 단계 접기' : '전체 단계 보기'}</button>
+        <button className="link" onClick={() => setList(!list)}>{list ? '접기' : '전체 단계 · 추가 예외'}</button>
         <button className="link" style={{ color: 'var(--ink-mute)' }} onClick={() => { if (confirm('처음부터 다시 시작할까요?')) d({ type: 'reset' }) }}>처음부터</button>
       </div>
     </aside>
@@ -95,7 +104,7 @@ function Lnb() {
   return (
     <nav className="lnb">
       <div className="logo"><i />pdx</div>
-      <button className={`lnb-item ${v.name === 'versions' ? 'active' : ''}`} onClick={() => d({ type: 'nav', view: { name: 'versions' } })}>앱 버전 관리</button>
+      {s.role !== 'op' && <button className={`lnb-item ${v.name === 'versions' ? 'active' : ''}`} onClick={() => d({ type: 'nav', view: { name: 'versions' } })}>앱 버전 관리</button>}
       {s.role === 'admin' && (
         <>
           <button className={`lnb-item ${v.name === 'deploy' ? 'active' : ''}`} onClick={() => d({ type: 'nav', view: { name: 'deploy', tab: 'status' } })}>배포 관리</button>
@@ -105,7 +114,7 @@ function Lnb() {
       )}
       <div className="lnb-sep" />
       <div className="lnb-group">{WORKSPACE} · 공장 목록</div>
-      {FACTORIES.map((f) => (
+      {FACTORIES.filter((f) => s.role !== 'op' || f.id === 'A').map((f) => (
         <button key={f.id} className={`lnb-item ${v.name === 'factory' && v.id === f.id ? 'active' : ''}`} onClick={() => d({ type: 'nav', view: { name: 'factory', id: f.id } })}>
           <span className="dot" style={{ background: factoryDot(s, f.id) }} />
           {f.name}
@@ -133,7 +142,7 @@ function Bell() {
           {mine.map((n) => (
             <button key={n.id} className={`item ${n.read ? '' : 'unread'}`} onClick={() => { setOpen(false); d({ type: 'openNotice', id: n.id }) }}>
               <div style={{ fontSize: 13, fontWeight: 500 }}>{n.text}</div>
-              <div className="caption">눌러서 반려 사유 확인</div>
+              <div className="caption">{n.sub}</div>
             </button>
           ))}
         </div>
@@ -153,7 +162,7 @@ function Header({ title, action }: { title: string; action?: ReactNode }) {
       <Bell />
       <div className="role-switch" title="프로토타입 전용: 역할을 바꿔 인계 과정을 확인합니다">
         <span className="cap">역할 전환</span>
-        {(['am', 'admin'] as Role[]).map((r) => (
+        {(['am', 'admin', 'op'] as Role[]).map((r) => (
           <button key={r} className={s.role === r ? 'on' : ''} onClick={() => d({ type: 'role', role: r })}>{USERS[r].title}</button>
         ))}
       </div>
@@ -169,7 +178,7 @@ function FactoryPage({ id }: { id: FactoryId }) {
   const cur = s.factoryVersion[id]
   return (
     <>
-      <div className="caption">{f.site} · 모든 역할이 같은 화면에서 공장별 상태를 확인합니다. 배포 조작은 배포 관리에서만 합니다.</div>
+      <div className="caption">{s.role === 'op' && '소속 공장만 보입니다 · '}{f.site} · 모든 역할이 같은 화면에서 공장별 상태를 확인합니다. 배포 조작은 배포 관리에서만 합니다.</div>
       <div className="table-wrap">
         <table className="tbl">
           <thead><tr><th>설치된 앱</th><th>분류</th><th className="r">버전</th><th>배포 상태</th></tr></thead>

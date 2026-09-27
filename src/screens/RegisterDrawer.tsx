@@ -34,6 +34,7 @@ export default function RegisterDrawer({ resubmitOf }: { resubmitOf?: string }) 
   const { d } = useApp()
   const sample = resubmitOf ? MANIFEST_V2 : MANIFEST_V1
   const [file, setFile] = useState<string | null>(null)
+  const [bad, setBad] = useState(false)
   const [reading, setReading] = useState(false)
   const [over, setOver] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -44,7 +45,8 @@ export default function RegisterDrawer({ resubmitOf }: { resubmitOf?: string }) 
     return () => clearTimeout(t)
   }, [reading])
 
-  const pick = (name?: string) => {
+  const pick = (name?: string, invalid = false) => {
+    setBad(invalid)
     setFile(name ?? sample.fileName)
     setReading(true)
   }
@@ -58,7 +60,7 @@ export default function RegisterDrawer({ resubmitOf }: { resubmitOf?: string }) 
       foot={
         <>
           <button className="btn btn-secondary" onClick={close}>취소</button>
-          <button className="btn btn-primary" disabled={!file || reading} onClick={() => d({ type: 'submit', resubmitOf })}>제출</button>
+          <button className="btn btn-primary" disabled={!file || reading || bad} onClick={() => d({ type: 'submit', resubmitOf })}>제출</button>
         </>
       }
     >
@@ -72,6 +74,11 @@ export default function RegisterDrawer({ resubmitOf }: { resubmitOf?: string }) 
           <div style={{ fontSize: 28, lineHeight: 1 }}>⇪</div>
           <div>패치 파일을 끌어 놓거나</div>
           <button className="btn btn-secondary" onClick={() => pick()}>샘플 파일 선택: <span className="mono">{sample.fileName}</span></button>
+          {!resubmitOf && (
+            <button className="link sim-link" onClick={() => pick('app-a_v2.0.1_bad.patch', true)}>
+              예외 확인용: 형식 오류 샘플 <span className="mono">app-a_v2.0.1_bad.patch</span>
+            </button>
+          )}
           <button className="link" onClick={() => inputRef.current?.click()}>내 컴퓨터에서 선택</button>
           <input ref={inputRef} type="file" hidden onChange={(e) => pick(e.target.files?.[0]?.name)} />
           <div className="caption">등록 정보는 패치 파일에서 자동으로 읽습니다. 직접 입력하거나 고치지 않습니다.</div>
@@ -82,11 +89,22 @@ export default function RegisterDrawer({ resubmitOf }: { resubmitOf?: string }) 
             <span className="ic">.patch</span>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div className="mono">{file}</div>
-              <div className="caption">{reading ? '등록 정보를 읽는 중…' : '필수 항목 · 형식 · 버전 규칙 검증 통과'}</div>
+              <div className="caption">{reading ? '등록 정보를 읽는 중…' : bad ? '검증 실패 · 저장되지 않음' : '필수 항목 · 형식 · 버전 규칙 검증 통과'}</div>
             </div>
             {reading ? <span className="spinner" /> : <button className="link" onClick={() => setFile(null)}>다른 파일</button>}
           </div>
-          {!reading && (
+          {!reading && bad && (
+            <>
+              <div className="banner critical"><span>●</span><div><b>어긋난 항목 3건 · 저장되지 않았습니다.</b> 파일을 고쳐 다시 올리세요. 등록 상태가 생기지 않으며 검토 대상도 아닙니다.</div></div>
+              <div className="kv">
+                <div className="k">필요 권한</div><div><span className="mono">alarm-write</span><div className="err">형식이 맞지 않음 (예: alarm.write)</div></div>
+                <div className="k">버전</div><div><span className="mono">v1.1.0</span><div className="err">승인된 최신 버전(v1.1.1)보다 높아야 함</div></div>
+                <div className="k">업그레이드 가능한 이전 버전</div><div><span className="mono">&gt;= 1.0.9</span><div className="err">승인된 버전이 아님</div></div>
+              </div>
+              <button className="btn btn-secondary" style={{ alignSelf: 'flex-start' }} onClick={() => { setFile(null); setBad(false) }}>다른 파일 올리기</button>
+            </>
+          )}
+          {!reading && !bad && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div className="banner info">
                 <span>●</span>

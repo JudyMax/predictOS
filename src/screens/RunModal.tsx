@@ -1,4 +1,5 @@
-import { FACTORIES } from '../data'
+import { useState } from 'react'
+import { FACTORIES, type FactoryId } from '../data'
 import { useApp } from '../store'
 import { checkAll } from '../state'
 import { Modal } from '../components/ui'
@@ -6,6 +7,7 @@ import { Modal } from '../components/ui'
 export default function RunModal() {
   const { s, d } = useApp()
   const checks = checkAll(s)
+  const [fail, setFail] = useState<FactoryId[]>([])
   const name = (f: string) => FACTORIES.find((x) => x.id === f)!.name
   const targets = s.deploy.selected.filter((f) => checks[f]?.result === 'pass')
   const excluded = FACTORIES.filter((f) => !targets.includes(f.id))
@@ -21,7 +23,7 @@ export default function RunModal() {
       foot={
         <>
           <button className="btn btn-secondary" onClick={() => d({ type: 'modal', modal: null })}>취소</button>
-          <button className="btn btn-primary" onClick={() => d({ type: 'execute' })}>실행</button>
+          <button className="btn btn-primary" onClick={() => d({ type: 'execute', fail })}>실행</button>
         </>
       }
     >
@@ -30,6 +32,15 @@ export default function RunModal() {
         <div className="k">실행 대상</div><div>{targets.map(name).join(', ')}</div>
         <div className="k">제외</div>
         <div>{excluded.length ? excluded.map((f) => `${f.name}(${reason(f.id)})`).join(', ') : '없음'}</div>
+      </div>
+      <div className="sim-box">
+        <div className="caption">예외 확인용 시뮬레이션 (배포 실패)</div>
+        {targets.map((f) => (
+          <label key={f} className="row" style={{ fontSize: 13, cursor: 'pointer' }}>
+            <input type="checkbox" checked={fail.includes(f)} onChange={() => setFail((x) => (x.includes(f) ? x.filter((y) => y !== f) : [...x, f]))} />
+            {name(f)}는 정상 동작 확인에 실패하게 하기
+          </label>
+        ))}
       </div>
       <div className="caption" style={{ fontSize: 13, color: 'var(--ink-secondary)' }}>
         실행하면 공장별 배포 이력과 실행 직전 점검 결과 스냅샷이 저장되고, 설치 후 정상 동작 확인까지 진행합니다. 실패하면 이전 버전을 유지합니다.

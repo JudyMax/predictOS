@@ -10,7 +10,7 @@ import {
 } from './data'
 
 export type RegStatus = 'pending' | 'approved' | 'rejected'
-export type RunPhase = 'installing' | 'verifying' | 'done'
+export type RunPhase = 'installing' | 'verifying' | 'done' | 'failed'
 export type Run = { phase: RunPhase; health: number; dataReceived: boolean }
 export type HistoryEntry = { at: string; actor: string; text: string }
 
@@ -34,7 +34,7 @@ export type Drawer =
   | null
 export type Modal = { type: 'reject'; id: string } | { type: 'run' } | null
 export type View = { name: 'versions' } | { name: 'deploy'; tab: 'status' | 'run' } | { name: 'factory'; id: FactoryId }
-export type Notice = { id: number; role: Role; text: string; versionId: string; read: boolean }
+export type Notice = { id: number; role: Role; text: string; sub: string; target: 'version' | 'deploy'; versionId: string; read: boolean }
 
 export type State = {
   role: Role
@@ -56,6 +56,9 @@ export type State = {
   }
   rejectCount: number
   freshId: string | null
+  raceArmed: string | null
+  conflict: { id: string; by: string; at: string } | null
+  failPlan: FactoryId[]
 }
 
 export const now = () => {
@@ -87,6 +90,9 @@ export const initialState = (): State => ({
   deploy: { versionId: null, selected: [], checked: false, applied: { perm: false, data: false }, reverified: false, runs: {}, executedAt: null },
   rejectCount: 0,
   freshId: null,
+  raceArmed: null,
+  conflict: null,
+  failPlan: [],
 })
 
 // ---------- 사전 환경 검증 (임시 결과, 저장하지 않음) ----------
@@ -152,24 +158,37 @@ export type Action =
   | { type: 'runCheck' }
   | { type: 'reselect' }
   | { type: 'applyFill'; perm: boolean; data: boolean }
-  | { type: 'execute' }
+  | { type: 'execute'; fail: FactoryId[] }
+  | { type: 'armRace'; id: string }
   | { type: 'tick' }
   | { type: 'openNotice'; id: number }
   | { type: 'reset' }
 
 let seq = 1
+
+// 동시 검토 충돌: 다른 Platform Admin이 먼저 승인한 뒤 내 승인·반려가 거부된다 (POL-064)
+function race(s: State, id: string): State {
+  const at = now()
+  const by = '한도윤'
+  const versions = s.versions.map((v) =>
+    v.id === id ? { ...v, status: 'approved' as const, approvedBy: by, history: [...v.history, { at, actor: by, text: '승인 → 등록 확정 (먼저 처리됨)' }] } : v,
+  )
+  return { ...s, versions, modal: null, raceArmed: null, conflict: { id, by, at } }
+}
 const toast = (text: string) => ({ id: seq++, text })
 
 export function reducer(s: State, a: Action): State {
   switch (a.type) {
     case 'role': {
-      const view: View = a.role === 'am' && s.view.name === 'deploy' ? { name: 'versions' } : s.view
+      const view: View = a.role === 'op' ? { name: 'factory', id: 'A' } : s.view.name === 'deploy' && a.role === 'am' ? { name: 'versions' } : s.view.name === 'factory' || s.role !== 'op' ? s.view : { name: 'versions' }
       return { ...s, role: a.role, view, drawer: null, modal: null }
     }
     case 'nav':
       return { ...s, view: a.view, drawer: null, modal: null }
     case 'drawer':
-      return { ...s, drawer: a.drawer }
+      return { ...s, drawer: a.drawer, conflict: a.drawer ? s.conflict : null }
+    case 'armRace':
+      return { ...s, raceArmed: a.id }
     case 'modal':
       return { ...s, modal: a.modal }
     case 'toast':
@@ -193,6 +212,7 @@ export function reducer(s: State, a: Action): State {
       return { ...s, versions: [nv, ...s.versions], drawer: null, freshId: nv.id, toast: toast('승인 대기로 등록됨') }
     }
     case 'approve': {
+      if (s.raceArmed === a.id) return race(s, a.id)
       const at = now()
       const versions = s.versions.map((v) =>
         v.id === a.id
@@ -203,6 +223,7 @@ export function reducer(s: State, a: Action): State {
       return { ...s, versions, toast: toast('승인했습니다. 등록이 확정되었습니다') }
     }
     case 'reject': {
+      if (s.raceArmed === a.id) return race(s, a.id)
       const at = now()
       const versions = s.versions.map((v) =>
         v.id === a.id
@@ -210,7 +231,7 @@ export function reducer(s: State, a: Action): State {
               history: [...v.history, { at, actor: USERS.admin.name, text: `반려 · 사유: ${a.reason}` }] }
           : v,
       )
-      const n: Notice = { id: seq++, role: 'am', text: `모터 진단 v2.0.1 등록이 반려되었습니다`, versionId: a.id, read: false }
+      const n: Notice = { id: seq++, role: 'am', text: `모터 진단 v2.0.1 등록이 반려되었습니다`, sub: '눌러서 반려 사유 확인', target: 'version', versionId: a.id, read: false }
       return { ...s, versions, modal: null, notices: [n, ...s.notices], rejectCount: s.rejectCount + 1, toast: toast('반려했습니다. 사유는 제출자에게만 보입니다') }
     }
     case 'startDeploy':
@@ -244,23 +265,35 @@ export function reducer(s: State, a: Action): State {
           ? { ...v, history: [...v.history, { at, actor: USERS.admin.name, text: `배포 실행 · 대상 ${targets.map((f) => `공장 ${f}`).join('·')} (점검 스냅샷 저장)` }] }
           : v,
       )
-      return { ...s, modal: null, versions, deploy: { ...s.deploy, runs, executedAt: at } }
+      return { ...s, modal: null, versions, failPlan: a.fail.filter((f) => targets.includes(f)), deploy: { ...s.deploy, runs, executedAt: at } }
     }
     case 'tick': {
       const runs = { ...s.deploy.runs }
       let changed = false
       const finished: FactoryId[] = []
+      const failed: FactoryId[] = []
       for (const f of Object.keys(runs) as FactoryId[]) {
         const r = runs[f]!
-        if (r.phase === 'done') continue
+        if (r.phase === 'done' || r.phase === 'failed') continue
         changed = true
-        if (r.phase === 'installing') runs[f] = { ...r, phase: 'verifying' }
+        if (r.phase === 'verifying' && r.health >= 1 && s.failPlan.includes(f)) { runs[f] = { ...r, phase: 'failed' }; failed.push(f) }
+        else if (r.phase === 'installing') runs[f] = { ...r, phase: 'verifying' }
         else if (r.health < 3) runs[f] = { ...r, health: r.health + 1 }
         else if (!r.dataReceived) runs[f] = { ...r, dataReceived: true }
         else { runs[f] = { ...r, phase: 'done' }; finished.push(f) }
       }
       if (!changed) return s
       let next: State = { ...s, deploy: { ...s.deploy, runs } }
+      if (failed.length) {
+        const v = s.versions.find((x) => x.id === s.deploy.versionId)!
+        const at = now()
+        const label = failed.map((f) => `공장 ${f}`).join('·')
+        const versions = next.versions.map((x) =>
+          x.id === v.id ? { ...x, history: [...x.history, ...failed.map((f) => ({ at, actor: '시스템', text: `공장 ${f} 정상 동작 확인 기준 미충족 → 실패, 이전 버전 v${s.factoryVersion[f]} 유지` }))] } : x,
+        )
+        const mk = (role: Role, sub: string, target: Notice['target']): Notice => ({ id: seq++, role, text: `${label} 배포 실패 · 모터 진단 v${v.version}`, sub, target, versionId: v.id, read: false })
+        next = { ...next, versions, notices: [mk('admin', '눌러서 배포 관리에서 확인', 'deploy'), mk('am', '눌러서 버전 상세에서 확인', 'version'), ...next.notices] }
+      }
       if (finished.length) {
         const v = s.versions.find((x) => x.id === s.deploy.versionId)!
         const at = now()
@@ -278,10 +311,9 @@ export function reducer(s: State, a: Action): State {
     case 'openNotice': {
       const n = s.notices.find((x) => x.id === a.id)
       if (!n) return s
-      return {
-        ...s, notices: s.notices.map((x) => (x.id === a.id ? { ...x, read: true } : x)),
-        view: { name: 'versions' }, drawer: { type: 'version', id: n.versionId }, modal: null,
-      }
+      const notices = s.notices.map((x) => (x.id === a.id ? { ...x, read: true } : x))
+      if (n.target === 'deploy') return { ...s, notices, view: { name: 'deploy', tab: 'run' }, drawer: null, modal: null }
+      return { ...s, notices, view: { name: 'versions' }, drawer: { type: 'version', id: n.versionId }, modal: null }
     }
     case 'reset':
       return initialState()

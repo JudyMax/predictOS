@@ -24,11 +24,11 @@ export function currentStep(s: State): GuideStep {
   if (v.status === 'rejected') return at(3)
   if (s.deploy.versionId !== v.id) return at(5)
   const runs = Object.values(s.deploy.runs)
-  if (s.deploy.executedAt) return runs.every((r) => r?.phase === 'done') ? at(10) : at(9)
+  if (s.deploy.executedAt) return runs.every((r) => r?.phase === 'done' || r?.phase === 'failed') ? at(10) : at(9)
   if (!s.deploy.checked) return at(6)
   const checks = checkAll(s)
   if (Object.values(checks).some((c) => c?.result === 'shortage')) return at(7)
   return at(8)
 }
 
-export const roleLabel = (r: Role | 'system') => (r === 'am' ? 'Application Manager' : r === 'admin' ? 'Platform Admin' : '시스템')
+export const roleLabel = (r: Role | 'system') => (r === 'am' ? 'Application Manager' : r === 'admin' ? 'Platform Admin' : r === 'op' ? 'Plant Operator' : '시스템')

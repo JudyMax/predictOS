@@ -343,3 +343,23 @@ textarea:focus, input:focus { outline: 2px solid var(--primary-subtle-border); b
 .sel { border: 1px solid var(--hairline-input); border-radius: 6px; padding: 7px 10px; font-family: inherit; font-size: 13px; color: var(--ink); background: var(--canvas); }
 .filters { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .lnb-cnt { margin-left: auto; background: var(--critical); color: #fff; border-radius: 9999px; font-size: 11px; min-width: 18px; height: 18px; display: grid; place-items: center; padding: 0 5px; font-feature-settings: "tnum"; }
+
+/* ---------- 기존 pdx 화면 톤 (회사소개서 캡처 기준) ---------- */
+.lnb { background: var(--canvas); gap: 2px; }
+.lnb-item { font-size: 13px; }
+.lnb-item .ic { color: var(--ink-mute); flex: none; }
+.lnb-item.active .ic { color: var(--primary-deep); }
+.lnb-group { font-size: 12px; font-weight: 500; color: var(--ink); padding: 20px 12px 6px; }
+.tree { border-radius: 8px; }
+.tree.open { background: var(--primary-subtle); padding-bottom: 6px; }
+.tree .folder:hover { background: rgba(83, 58, 253, 0.06); }
+.tree .folder .mute { font-size: 12px; }
+.chev-r { color: var(--ink-mute); font-size: 12px; width: 12px; text-align: center; }
+.lnb-sub { display: flex; align-items: center; gap: 8px; width: calc(100% - 12px); margin-left: 12px; text-align: left; background: none; border: 0; border-radius: 6px; padding: 7px 12px 7px 24px; font-size: 13px; color: var(--ink-secondary); cursor: pointer; }
+.lnb-sub:hover { background: rgba(83, 58, 253, 0.08); }
+.lnb-sub.active { background: #dcd8ff; color: var(--primary-deep); font-weight: 500; }
+.header { height: 60px; }
+.header h1 { font-size: 20px; font-weight: 500; letter-spacing: -0.3px; }
+.content > .tabs:first-child { margin: -24px -32px 4px; padding: 0 32px; background: var(--canvas); border-bottom: 1px solid var(--hairline); }
+.main:has(.content > .tabs:first-child) .header { border-bottom: 0; }
+.tabs button { font-size: 13px; }

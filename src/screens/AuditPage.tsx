@@ -89,11 +89,11 @@ export default function AuditPage() {
       ) : (
         <div className="table-wrap">
           <table className="tbl">
-            <thead><tr><th className="r">처리 시각</th><th>행위 유형</th><th>대상</th><th>공장</th><th>처리자</th><th>변경 전 → 후</th><th>사유</th></tr></thead>
+            <thead><tr><th style={{ width: 170 }}>처리 시각</th><th>행위 유형</th><th>대상</th><th>공장</th><th>처리자</th><th>변경 전 → 후</th><th>사유</th></tr></thead>
             <tbody>
               {list.map((e) => (
                 <tr key={e.id} className={`clickable ${s.drawer?.type === 'audit' && s.drawer.id === e.id ? 'selected' : ''}`} onClick={() => d({ type: 'drawer', drawer: { type: 'audit', id: e.id } })}>
-                  <td className="r tnum mute">{e.at}</td>
+                  <td className="tnum mute">{e.at}</td>
                   <td>{e.type}</td>
                   <td>{e.app && e.target !== e.app && !e.target.startsWith(e.app) ? `${e.target} · ${e.app}` : e.target}</td>
                   <td>{FACTORIES.find((x) => x.id === e.factory)?.name ?? '—'}</td>

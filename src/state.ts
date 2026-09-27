@@ -147,6 +147,8 @@ export function evaluate(f: FactoryId, m: Manifest, current: string, applied: St
   items.push({ key: 'mxfm', label: '② MxFM 버전', declared: m.mxfmVersion, current: env.mxfm, status: cmpVer(env.mxfm, minOf(m.mxfmVersion)) >= 0 ? 'ok' : 'bad' })
   const pathOk = cmpVer(current, minOf(m.upgradableFrom)) >= 0
   items.push({ key: 'path', label: '③ 업그레이드 경로', declared: m.upgradableFrom, current: `현재 v${current}`, status: pathOk ? 'ok' : 'bad' })
+  const stop = items.findIndex((i) => i.status === 'bad')
+  if (stop >= 0) for (let i = stop + 1; i < items.length; i++) items[i] = { ...items[i], current: '앞 검사에서 차단되어 확인하지 않음', status: 'na' }
   if (items.some((i) => i.status === 'bad')) {
     // 버전 검사에서 막히면 설정 검사는 하지 않는다 (버전 → 설정 순서)
     items.push({ key: 'perm', label: '④ 권한', declared: '—', current: '버전 검사에서 차단되어 확인하지 않음', status: 'na' })
@@ -250,6 +252,7 @@ function core(s: State, a: Action): State {
       return { ...s, versions: [nv, ...s.versions], drawer: null, freshId: nv.id, toast: toast('승인 대기로 등록됨') }
     }
     case 'approve': {
+      if (s.versions.find((v) => v.id === a.id)?.submitter === USERS.admin.name) return { ...s, toast: toast('자신이 제출한 등록은 승인할 수 없습니다') }
       if (s.raceArmed === a.id) return race(s, a.id)
       const at = now()
       const versions = s.versions.map((v) =>
@@ -273,6 +276,7 @@ function core(s: State, a: Action): State {
       return { ...s, versions, modal: null, notices: [n, ...s.notices], rejectCount: s.rejectCount + 1, toast: toast('반려했습니다. 사유는 제출자에게만 보입니다') }
     }
     case 'startDeploy':
+      if (s.deploy.versionId === a.id && s.deploy.executedAt) return { ...s, view: { name: 'deploy', tab: 'run' }, drawer: null, modal: null }
       return {
         ...s, view: { name: 'deploy', tab: 'run' }, drawer: null, modal: null,
         deploy: { ...s.deploy, versionId: a.id, selected: [], checked: false, runs: {}, executedAt: null },
@@ -384,6 +388,7 @@ function access(s: State, a: Action): State | null {
     }
     case 'rejectUsage': {
       const r = s.requests.find((x) => x.id === a.reqId)!
+      if (r.status !== 'pending') return { ...s, modal: null, toast: toast('이미 처리된 요청입니다') }
       const requests = s.requests.map((x) => (x.id === r.id ? { ...x, status: 'rejected' as const, rejectReason: a.reason } : x))
       return addAudit({ ...s, requests, modal: null, toast: toast('거절했습니다. 요청자는 공장 화면에서 사유를 봅니다') },
         entry({ type: '사용 권한 거절', target: nameOf(r.uid), app: r.app, factory: r.factory, actor: admin, before: '요청 대기', after: '거절됨', reason: a.reason, requester: nameOf(r.uid), approver: admin }))

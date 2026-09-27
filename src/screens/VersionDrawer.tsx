@@ -1,4 +1,4 @@
-import { FACTORIES } from '../data'
+import { FACTORIES, USERS } from '../data'
 import { useApp } from '../store'
 import { Drawer, RegBadge, RunBadge, Badge } from '../components/ui'
 import { ManifestView } from './RegisterDrawer'
@@ -23,6 +23,14 @@ export default function VersionDrawer({ id }: { id: string }) {
     )
   } else if (!isAdmin && failedFs.length) {
     foot = <button className="btn btn-primary" onClick={() => d({ type: 'toast', text: '프로토타입: 새 버전(v2.0.2) 등록은 1단계와 같은 흐름입니다' })}>새 버전 등록</button>
+  } else if (isAdmin && v.status === 'pending' && v.submitter === USERS.admin.name) {
+    foot = (
+      <>
+        <span className="caption" style={{ marginRight: 'auto' }}>자신이 제출한 등록은 승인할 수 없습니다</span>
+        <button className="btn btn-danger" onClick={() => d({ type: 'modal', modal: { type: 'reject', id: v.id } })}>반려</button>
+        <button className="btn" disabled>승인</button>
+      </>
+    )
   } else if (isAdmin && v.status === 'pending') {
     foot = (
       <>

@@ -1,6 +1,6 @@
 import { useEffect, useReducer, useState, type ReactNode } from 'react'
 import { FACTORIES, ME, OTHER_APPS, USERS, WORKSPACE, type FactoryId, type Role } from './data'
-import { initialState, reducer, type State } from './state'
+import { initialState, reducer, type State, type View } from './state'
 import { AppCtx, useApp } from './store'
 import { STEPS, currentStep, roleLabel } from './guide'
 import { Badge, RunBadge } from './components/ui'
@@ -100,35 +100,63 @@ function GuidePanel() {
 
 function factoryDot(s: State, f: FactoryId) {
   const r = s.deploy.runs[f]
+  if (r?.phase === 'failed') return 'var(--critical)'
   if (r && r.phase !== 'done') return 'var(--progress)'
   return f === 'B' ? 'var(--caution-dot)' : 'var(--normal)'
 }
 
+const ICONS: Record<string, string> = {
+  versions: 'M21 8 12 3 3 8v8l9 5 9-5V8ZM3 8l9 5 9-5M12 13v8',
+  deploy: 'M12 16V4M7 9l5-5 5 5M4 20h16',
+  access: 'M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6l-8-3ZM9 12l2 2 4-4',
+  audit: 'M12 7v5l3 2M21 12a9 9 0 1 1-9-9 9 9 0 0 1 9 9Z',
+  folder: 'M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z',
+}
+const Icon = ({ k }: { k: string }) => (
+  <svg className="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d={ICONS[k]} /></svg>
+)
+
 function Lnb() {
   const { s, d } = useApp()
   const v = s.view
+  const [open, setOpen] = useState<Record<string, boolean>>({ A: true })
+  const pending = s.requests.filter((r) => r.status === 'pending').length
+  const item = (name: string, label: string, view: View, extra?: ReactNode) => (
+    <button className={`lnb-item ${v.name === name ? 'active' : ''}`} onClick={() => d({ type: 'nav', view })}>
+      <Icon k={name} />{label}{extra}
+    </button>
+  )
   return (
     <nav className="lnb">
       <div className="logo"><i />pdx</div>
-      {s.role !== 'op' && <button className={`lnb-item ${v.name === 'versions' ? 'active' : ''}`} onClick={() => d({ type: 'nav', view: { name: 'versions' } })}>앱 버전 관리</button>}
+      {s.role !== 'op' && item('versions', '앱 버전 관리', { name: 'versions' })}
       {s.role === 'admin' && (
         <>
-          <button className={`lnb-item ${v.name === 'deploy' ? 'active' : ''}`} onClick={() => d({ type: 'nav', view: { name: 'deploy', tab: 'status' } })}>배포 관리</button>
-          <button className={`lnb-item ${v.name === 'access' ? 'active' : ''}`} onClick={() => d({ type: 'nav', view: { name: 'access', tab: 'users' } })}>
-            권한 관리{s.requests.some((r) => r.status === 'pending') && <span className="lnb-cnt">{s.requests.filter((r) => r.status === 'pending').length}</span>}
-          </button>
-          <button className={`lnb-item ${v.name === 'audit' ? 'active' : ''}`} onClick={() => d({ type: 'nav', view: { name: 'audit' } })}>변경 기록</button>
+          {item('deploy', '배포 관리', { name: 'deploy', tab: 'status' })}
+          {item('access', '권한 관리', { name: 'access', tab: 'users' }, pending > 0 && <span className="lnb-cnt">{pending}</span>)}
+          {item('audit', '변경 기록', { name: 'audit' })}
         </>
       )}
-      <div className="lnb-sep" />
-      <div className="lnb-group">{WORKSPACE} · 공장 목록</div>
-      {FACTORIES.filter((f) => s.role !== 'op' || f.id === 'A').map((f) => (
-        <button key={f.id} className={`lnb-item ${v.name === 'factory' && v.id === f.id ? 'active' : ''}`} onClick={() => d({ type: 'nav', view: { name: 'factory', id: f.id } })}>
-          <span className="dot" style={{ background: factoryDot(s, f.id) }} />
-          {f.name}
-          <span className="soon">{f.site}</span>
-        </button>
-      ))}
+      <div className="lnb-group">공장 목록 <span className="caption">{WORKSPACE}</span></div>
+      {FACTORIES.filter((f) => s.role !== 'op' || f.id === 'A').map((f) => {
+        const isOpen = !!open[f.id]
+        const active = v.name === 'factory' && v.id === f.id
+        const count = s.role === 'am' ? 1 : 1 + OTHER_APPS.filter((o) => o.installed.includes(f.id)).length
+        return (
+          <div key={f.id} className={`tree ${isOpen ? 'open' : ''}`}>
+            <button className="lnb-item folder" onClick={() => setOpen({ ...open, [f.id]: !isOpen })}>
+              <Icon k="folder" />{f.name}<span className="mute">({count})</span>
+              <span className="dot" style={{ background: factoryDot(s, f.id), marginLeft: 'auto' }} />
+              <span className="chev-r">{isOpen ? '⌃' : '⌄'}</span>
+            </button>
+            {isOpen && (
+              <button className={`lnb-sub ${active ? 'active' : ''}`} onClick={() => d({ type: 'nav', view: { name: 'factory', id: f.id } })}>
+                설치된 앱 <span className="caption">{f.site}</span>
+              </button>
+            )}
+          </div>
+        )
+      })}
     </nav>
   )
 }
@@ -204,7 +232,7 @@ function FactoryPage({ id }: { id: FactoryId }) {
   const cur = s.factoryVersion[id]
   return (
     <>
-      <div className="caption">{s.role === 'op' && '소속 공장만 보입니다 · '}{f.site} · 모든 역할이 같은 화면에서 공장별 상태를 확인합니다. 배포 조작은 배포 관리에서만 합니다.</div>
+      <div className="caption">{s.role === 'op' && '소속 공장만 보입니다 · '}{s.role === 'am' && '등록 권한을 받은 앱(모터 진단)만 보입니다 · '}{f.site} · 모든 역할이 같은 화면에서 공장별 상태를 확인합니다. 배포 조작은 배포 관리에서만 합니다.</div>
       <div className="table-wrap">
         <table className="tbl">
           <thead><tr><th>설치된 앱</th><th>분류</th><th className="r">버전</th><th>배포 상태</th>{op && <th>내 사용 권한</th>}</tr></thead>
@@ -215,7 +243,7 @@ function FactoryPage({ id }: { id: FactoryId }) {
               <td>{run ? <RunBadge run={run} /> : <Badge tone="normal">완료 · 정상 동작</Badge>}</td>
               {op && <td><UsageCell app="모터 진단" /></td>}
             </tr>
-            {OTHER_APPS.filter((o) => o.installed.includes(id)).map((o) => (
+            {OTHER_APPS.filter((o) => o.installed.includes(id) && s.role !== 'am').map((o) => (
               <tr key={o.app}><td>{o.app}</td><td className="mute">{o.category}</td><td className="r mono tnum">v{o.version}</td><td><Badge tone="normal">완료 · 정상 동작</Badge></td>{op && <td><UsageCell app={o.app} /></td>}</tr>
             ))}
           </tbody>

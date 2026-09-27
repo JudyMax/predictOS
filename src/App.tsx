@@ -1,5 +1,5 @@
 import { useEffect, useReducer, useState, type ReactNode } from 'react'
-import { FACTORIES, OTHER_APPS, USERS, WORKSPACE, type FactoryId, type Role } from './data'
+import { FACTORIES, ME, OTHER_APPS, USERS, WORKSPACE, type FactoryId, type Role } from './data'
 import { initialState, reducer, type State } from './state'
 import { AppCtx, useApp } from './store'
 import { STEPS, currentStep, roleLabel } from './guide'
@@ -11,6 +11,8 @@ import RejectModal from './screens/RejectModal'
 import DeployPage from './screens/DeployPage'
 import FillDrawer from './screens/FillDrawer'
 import RunModal from './screens/RunModal'
+import AccessPage, { RejectUsageModal, RestrictModal, UsageRequestModal, UserDrawer } from './screens/AccessPage'
+import AuditPage, { AuditDrawer } from './screens/AuditPage'
 
 function GuidePanel() {
   const { s, d } = useApp()
@@ -80,6 +82,10 @@ function GuidePanel() {
               <div className="role">동시 검토 충돌: 승인 대기 버전 상세의 시뮬레이션</div>
               <div className="role">배포 실패: 배포 실행 확인 모달의 시뮬레이션</div>
               <div className="role">Plant Operator: 역할 전환에서 선택, 소속 공장만 보임</div>
+              <b style={{ display: 'block', marginTop: 8 }}>다른 흐름 둘러보기</b>
+              <div className="role">흐름 2 사용 권한 요청: Plant Operator → 공장 A의 잠긴 앱에서 요청 → Admin의 권한 관리 › 사용 권한 요청 탭에서 승인·거절</div>
+              <div className="role">흐름 3 권한 부여·제한: Admin의 권한 관리 › 사용자 → 사용자 선택</div>
+              <div className="role">흐름 4 변경 기록: Admin의 변경 기록 (필터·상세, Admin 외 역할은 조회 거부)</div>
             </div>
           </li>
         </ol>
@@ -108,8 +114,10 @@ function Lnb() {
       {s.role === 'admin' && (
         <>
           <button className={`lnb-item ${v.name === 'deploy' ? 'active' : ''}`} onClick={() => d({ type: 'nav', view: { name: 'deploy', tab: 'status' } })}>배포 관리</button>
-          <button className="lnb-item" disabled title="이번 프로토타입 범위 밖">권한 관리<span className="soon">범위 밖</span></button>
-          <button className="lnb-item" disabled title="이번 프로토타입 범위 밖">변경 기록<span className="soon">범위 밖</span></button>
+          <button className={`lnb-item ${v.name === 'access' ? 'active' : ''}`} onClick={() => d({ type: 'nav', view: { name: 'access', tab: 'users' } })}>
+            권한 관리{s.requests.some((r) => r.status === 'pending') && <span className="lnb-cnt">{s.requests.filter((r) => r.status === 'pending').length}</span>}
+          </button>
+          <button className={`lnb-item ${v.name === 'audit' ? 'active' : ''}`} onClick={() => d({ type: 'nav', view: { name: 'audit' } })}>변경 기록</button>
         </>
       )}
       <div className="lnb-sep" />
@@ -171,8 +179,26 @@ function Header({ title, action }: { title: string; action?: ReactNode }) {
   )
 }
 
+function UsageCell({ app }: { app: string }) {
+  const { s, d } = useApp()
+  if ((s.grants[ME.op] ?? []).includes(app)) return <Badge tone="normal">사용 가능</Badge>
+  const req = s.requests.find((r) => r.uid === ME.op && r.app === app)
+  const ask = (label: string) => <button className="link" onClick={() => d({ type: 'modal', modal: { type: 'usage', app } })}>{label}</button>
+  if (req?.status === 'pending') return <span className="cell-stack"><Badge tone="caution">요청 대기 중</Badge>{ask('다시 요청')}</span>
+  if (req?.status === 'rejected') {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <span className="cell-stack"><Badge tone="critical">잠김 · 거절됨</Badge>{ask('다시 요청')}</span>
+        <span className="caption">사유: {req.rejectReason}</span>
+      </div>
+    )
+  }
+  return <span className="cell-stack"><Badge tone="stopped">잠김 · 사용 권한 없음</Badge>{ask('사용 권한 요청')}</span>
+}
+
 function FactoryPage({ id }: { id: FactoryId }) {
   const { s } = useApp()
+  const op = s.role === 'op'
   const f = FACTORIES.find((x) => x.id === id)!
   const run = s.deploy.runs[id]
   const cur = s.factoryVersion[id]
@@ -181,19 +207,21 @@ function FactoryPage({ id }: { id: FactoryId }) {
       <div className="caption">{s.role === 'op' && '소속 공장만 보입니다 · '}{f.site} · 모든 역할이 같은 화면에서 공장별 상태를 확인합니다. 배포 조작은 배포 관리에서만 합니다.</div>
       <div className="table-wrap">
         <table className="tbl">
-          <thead><tr><th>설치된 앱</th><th>분류</th><th className="r">버전</th><th>배포 상태</th></tr></thead>
+          <thead><tr><th>설치된 앱</th><th>분류</th><th className="r">버전</th><th>배포 상태</th>{op && <th>내 사용 권한</th>}</tr></thead>
           <tbody>
             <tr>
               <td>모터 진단</td><td className="mute">설비 진단</td>
               <td className="r mono tnum">v{cur}</td>
               <td>{run ? <RunBadge run={run} /> : <Badge tone="normal">완료 · 정상 동작</Badge>}</td>
+              {op && <td><UsageCell app="모터 진단" /></td>}
             </tr>
             {OTHER_APPS.filter((o) => o.installed.includes(id)).map((o) => (
-              <tr key={o.app}><td>{o.app}</td><td className="mute">{o.category}</td><td className="r mono tnum">v{o.version}</td><td><Badge tone="normal">완료 · 정상 동작</Badge></td></tr>
+              <tr key={o.app}><td>{o.app}</td><td className="mute">{o.category}</td><td className="r mono tnum">v{o.version}</td><td><Badge tone="normal">완료 · 정상 동작</Badge></td>{op && <td><UsageCell app={o.app} /></td>}</tr>
             ))}
           </tbody>
         </table>
       </div>
+      {op && <div className="caption">잠긴 앱은 사용 권한을 요청할 수 있고, 결과는 이 표의 앱 행에 표시됩니다. 메일·문자 알림은 없습니다.</div>}
       {id === 'B' && cur === '1.0.3' && (
         <div className="banner caution"><span>●</span><div>모터 진단 v2.0.1로 올리려면 선행 버전(v1.1 이상)을 먼저 배포해야 합니다.</div></div>
       )}
@@ -204,13 +232,13 @@ function FactoryPage({ id }: { id: FactoryId }) {
 function Shell() {
   const { s, d } = useApp()
   const v = s.view
-  const title = v.name === 'versions' ? '앱 버전 관리' : v.name === 'deploy' ? '배포 관리' : FACTORIES.find((f) => f.id === v.id)!.name
+  const title = v.name === 'versions' ? '앱 버전 관리' : v.name === 'deploy' ? '배포 관리' : v.name === 'access' ? '권한 관리' : v.name === 'audit' ? '변경 기록' : FACTORIES.find((f) => f.id === v.id)!.name
   const action = v.name === 'versions' && s.role === 'am'
     ? <button className="btn btn-primary" onClick={() => d({ type: 'drawer', drawer: { type: 'register' } })}>새 버전 등록</button>
     : undefined
 
   // 설치·동작 확인 진행 (타이머 시뮬레이션)
-  const running = Object.values(s.deploy.runs).some((r) => r && r.phase !== 'done')
+  const running = Object.values(s.deploy.runs).some((r) => r && r.phase !== 'done' && r.phase !== 'failed')
   useEffect(() => {
     if (!running) return
     const t = setTimeout(() => d({ type: 'tick' }), 1100)
@@ -233,7 +261,16 @@ function Shell() {
           <div className="content">
             {v.name === 'versions' && <VersionList />}
             {v.name === 'deploy' && <DeployPage tab={v.tab} />}
-            {v.name === 'factory' && <FactoryPage id={v.id} />}
+            {s.role === 'op' && s.disabled[ME.op] ? (
+              <div className="card empty-state">
+                <div style={{ fontSize: 16, color: 'var(--ink)' }}>계정이 비활성화되었습니다</div>
+                <div>Platform Admin이 이 계정을 차단해 세션이 즉시 종료되었습니다. 관리자에게 문의하세요.</div>
+              </div>
+            ) : (
+              v.name === 'factory' && <FactoryPage id={v.id} />
+            )}
+            {v.name === 'access' && <AccessPage tab={v.tab} />}
+            {v.name === 'audit' && <AuditPage />}
           </div>
         </main>
       </div>
@@ -242,6 +279,11 @@ function Shell() {
       {s.drawer?.type === 'fill' && <FillDrawer factory={s.drawer.factory} />}
       {s.modal?.type === 'reject' && <RejectModal id={s.modal.id} />}
       {s.modal?.type === 'run' && <RunModal />}
+      {s.drawer?.type === 'user' && <UserDrawer key={s.drawer.uid} uid={s.drawer.uid} />}
+      {s.drawer?.type === 'audit' && <AuditDrawer id={s.drawer.id} />}
+      {s.modal?.type === 'usage' && <UsageRequestModal app={s.modal.app} />}
+      {s.modal?.type === 'rejectUsage' && <RejectUsageModal reqId={s.modal.reqId} />}
+      {s.modal?.type === 'restrict' && <RestrictModal uid={s.modal.uid} app={s.modal.app} />}
       <GuidePanel />
       {s.toast && <div className="toast" key={s.toast.id}>{s.toast.text}</div>}
     </>

@@ -339,3 +339,7 @@ textarea:focus, input:focus { outline: 2px solid var(--primary-subtle-border); b
 .guide-list li.extra { border-top: 1px dashed var(--hairline); margin-top: 6px; padding-top: 10px; }
 .guide-list li.extra b { font-weight: 500; }
 .role-switch button { padding: 4px 10px; font-size: 12px; }
+
+.sel { border: 1px solid var(--hairline-input); border-radius: 6px; padding: 7px 10px; font-family: inherit; font-size: 13px; color: var(--ink); background: var(--canvas); }
+.filters { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.lnb-cnt { margin-left: auto; background: var(--critical); color: #fff; border-radius: 9999px; font-size: 11px; min-width: 18px; height: 18px; display: grid; place-items: center; padding: 0 5px; font-feature-settings: "tnum"; }

@@ -1,6 +1,9 @@
 import {
   FACTORY_ENV,
   INITIAL_FACTORY_VERSION,
+  PEOPLE,
+  ME,
+  initialGrants,
   MANIFEST_V1,
   MANIFEST_V2,
   USERS,
@@ -31,10 +34,25 @@ export type Drawer =
   | { type: 'register'; resubmitOf?: string }
   | { type: 'version'; id: string }
   | { type: 'fill'; factory: FactoryId }
+  | { type: 'user'; uid: string }
+  | { type: 'audit'; id: number }
   | null
-export type Modal = { type: 'reject'; id: string } | { type: 'run' } | null
-export type View = { name: 'versions' } | { name: 'deploy'; tab: 'status' | 'run' } | { name: 'factory'; id: FactoryId }
+export type Modal =
+  | { type: 'reject'; id: string }
+  | { type: 'run' }
+  | { type: 'usage'; app: string }
+  | { type: 'rejectUsage'; reqId: number }
+  | { type: 'restrict'; uid: string; app?: string }
+  | null
+export type View = { name: 'versions' } | { name: 'deploy'; tab: 'status' | 'run' } | { name: 'factory'; id: FactoryId } | { name: 'access'; tab: 'users' | 'requests' } | { name: 'audit' }
 export type Notice = { id: number; role: Role; text: string; sub: string; target: 'version' | 'deploy'; versionId: string; read: boolean }
+
+export type UsageReq = { id: number; uid: string; app: string; factory: FactoryId; reason: string; at: string; status: 'pending' | 'approved' | 'rejected'; rejectReason?: string }
+export type AuditEntry = {
+  id: number; at: string; type: string; target: string; app?: string; version?: string; factory?: FactoryId
+  actor: string; before?: string; after?: string; reason?: string
+  requester?: string; approver?: string; executor?: string; appliedAt?: string; snapshot?: CheckItem[]
+}
 
 export type State = {
   role: Role
@@ -59,6 +77,10 @@ export type State = {
   raceArmed: string | null
   conflict: { id: string; by: string; at: string } | null
   failPlan: FactoryId[]
+  grants: Record<string, string[]>
+  requests: UsageReq[]
+  disabled: Record<string, boolean>
+  audit: AuditEntry[]
 }
 
 export const now = () => {
@@ -93,6 +115,17 @@ export const initialState = (): State => ({
   raceArmed: null,
   conflict: null,
   failPlan: [],
+  grants: initialGrants(),
+  requests: [],
+  disabled: {},
+  audit: ([
+    { id: -6, at: '2026-05-20 10:41:52', type: '등록 요청', target: '모터 진단 v1.0.3', app: '모터 진단', version: '1.0.3', actor: USERS.am.name, before: '—', after: '승인 대기', requester: USERS.am.name },
+    { id: -5, at: '2026-05-21 09:12:40', type: '승인', target: '모터 진단 v1.0.3', app: '모터 진단', version: '1.0.3', actor: USERS.admin.name, before: '승인 대기', after: '승인됨', requester: USERS.am.name, approver: USERS.admin.name },
+    { id: -4, at: '2026-05-22 15:30:05', type: '반영', target: '모터 진단 v1.0.3', app: '모터 진단', version: '1.0.3', factory: 'B', actor: '시스템', before: 'v1.0.2', after: 'v1.0.3', executor: USERS.admin.name, appliedAt: '2026-05-22 15:30:05' },
+    { id: -3, at: '2026-08-12 14:03:11', type: '등록 요청', target: '모터 진단 v1.1.1', app: '모터 진단', version: '1.1.1', actor: USERS.am.name, before: '—', after: '승인 대기', requester: USERS.am.name },
+    { id: -2, at: '2026-08-13 10:20:44', type: '승인', target: '모터 진단 v1.1.1', app: '모터 진단', version: '1.1.1', actor: USERS.admin.name, before: '승인 대기', after: '승인됨', requester: USERS.am.name, approver: USERS.admin.name },
+    { id: -1, at: '2026-08-14 16:02:19', type: '반영', target: '모터 진단 v1.1.1', app: '모터 진단', version: '1.1.1', factory: 'A', actor: '시스템', before: 'v1.1.0', after: 'v1.1.1', executor: USERS.admin.name, appliedAt: '2026-08-14 16:02:19' },
+  ] as AuditEntry[]).reverse(),
 })
 
 // ---------- 사전 환경 검증 (임시 결과, 저장하지 않음) ----------
@@ -163,6 +196,11 @@ export type Action =
   | { type: 'tick' }
   | { type: 'openNotice'; id: number }
   | { type: 'reset' }
+  | { type: 'requestUsage'; app: string; reason: string }
+  | { type: 'approveUsage'; reqId: number }
+  | { type: 'rejectUsage'; reqId: number; reason: string }
+  | { type: 'grant'; uid: string; app: string; reason: string }
+  | { type: 'restrict'; uid: string; app?: string; reason: string }
 
 let seq = 1
 
@@ -177,10 +215,10 @@ function race(s: State, id: string): State {
 }
 const toast = (text: string) => ({ id: seq++, text })
 
-export function reducer(s: State, a: Action): State {
+function core(s: State, a: Action): State {
   switch (a.type) {
     case 'role': {
-      const view: View = a.role === 'op' ? { name: 'factory', id: 'A' } : s.view.name === 'deploy' && a.role === 'am' ? { name: 'versions' } : s.view.name === 'factory' || s.role !== 'op' ? s.view : { name: 'versions' }
+      const view: View = a.role === 'op' ? { name: 'factory', id: 'A' } : a.role === 'am' && (s.view.name === 'deploy' || s.view.name === 'access') ? { name: 'versions' } : s.view.name === 'factory' || s.view.name === 'audit' || s.role !== 'op' ? s.view : { name: 'versions' }
       return { ...s, role: a.role, view, drawer: null, modal: null }
     }
     case 'nav':
@@ -317,5 +355,102 @@ export function reducer(s: State, a: Action): State {
     }
     case 'reset':
       return initialState()
+    default:
+      return s
   }
+}
+
+// ---------- 흐름 2·3: 사용 권한 요청, 권한 부여·제한·차단 ----------
+const nameOf = (uid: string) => PEOPLE.find((p) => p.id === uid)!.name
+let aseq = 1
+const entry = (e: Omit<AuditEntry, 'id' | 'at'>, at = now()): AuditEntry => ({ id: aseq++, at, ...e })
+const addAudit = (s: State, ...es: AuditEntry[]): State => ({ ...s, audit: [...es.reverse(), ...s.audit] })
+
+function access(s: State, a: Action): State | null {
+  const admin = USERS.admin.name
+  switch (a.type) {
+    case 'requestUsage': {
+      const uid = ME.op
+      const r: UsageReq = { id: seq++, uid, app: a.app, factory: 'A', reason: a.reason, at: now(), status: 'pending' }
+      return { ...s, requests: [r, ...s.requests], modal: null, toast: toast('사용 권한을 요청했습니다') }
+    }
+    case 'approveUsage': {
+      const r = s.requests.find((x) => x.id === a.reqId)!
+      if (r.status !== 'pending') return { ...s, toast: toast('이미 처리된 요청입니다') }
+      const requests = s.requests.map((x) => (x.id === r.id ? { ...x, status: 'approved' as const } : x))
+      const grants = { ...s.grants, [r.uid]: [...(s.grants[r.uid] ?? []), r.app] }
+      return addAudit({ ...s, requests, grants, toast: toast(`${nameOf(r.uid)}님에게 ${r.app} 사용 권한을 주었습니다`) },
+        entry({ type: '사용 권한 승인', target: nameOf(r.uid), app: r.app, factory: r.factory, actor: admin, before: '사용 권한 없음', after: '사용 가능', reason: r.reason, requester: nameOf(r.uid), approver: admin }))
+    }
+    case 'rejectUsage': {
+      const r = s.requests.find((x) => x.id === a.reqId)!
+      const requests = s.requests.map((x) => (x.id === r.id ? { ...x, status: 'rejected' as const, rejectReason: a.reason } : x))
+      return addAudit({ ...s, requests, modal: null, toast: toast('거절했습니다. 요청자는 공장 화면에서 사유를 봅니다') },
+        entry({ type: '사용 권한 거절', target: nameOf(r.uid), app: r.app, factory: r.factory, actor: admin, before: '요청 대기', after: '거절됨', reason: a.reason, requester: nameOf(r.uid), approver: admin }))
+    }
+    case 'grant': {
+      const grants = { ...s.grants, [a.uid]: [...(s.grants[a.uid] ?? []), a.app] }
+      return addAudit({ ...s, grants, toast: toast(`${a.app} 권한을 부여했습니다`) },
+        entry({ type: '권한 부여', target: nameOf(a.uid), app: a.app, actor: admin, before: '사용 권한 없음', after: '사용 가능', reason: a.reason || '—' }))
+    }
+    case 'restrict': {
+      if (a.app) {
+        const grants = { ...s.grants, [a.uid]: (s.grants[a.uid] ?? []).filter((x) => x !== a.app) }
+        return addAudit({ ...s, grants, modal: null, toast: toast(`${a.app} 권한을 제한했습니다. 세션에 즉시 반영됩니다`) },
+          entry({ type: '권한 제한', target: nameOf(a.uid), app: a.app, actor: admin, before: '사용 가능', after: '사용 권한 없음', reason: a.reason }))
+      }
+      return addAudit({ ...s, disabled: { ...s.disabled, [a.uid]: true }, modal: null, toast: toast(`${nameOf(a.uid)} 계정을 차단했습니다. 세션에 즉시 반영됩니다`) },
+        entry({ type: '계정 차단', target: nameOf(a.uid), actor: admin, before: '활성', after: '비활성', reason: a.reason }))
+    }
+  }
+  return null
+}
+
+// ---------- 흐름 1 처리를 변경 기록으로 남긴다 (REQ-BE-AUDIT-003) ----------
+function withAudit(s: State, n: State, a: Action): State {
+  const v = n.versions.find((x) => x.id === 'v201')
+  const tgt = v ? `모터 진단 v${v.version}` : ''
+  const base = { target: tgt, app: '모터 진단', version: v?.version }
+  const am = USERS.am.name
+  switch (a.type) {
+    case 'submit':
+      if (n.versions === s.versions) return n
+      return addAudit(n, entry({ ...base, type: a.resubmitOf ? '재제출' : '등록 요청', actor: am, before: a.resubmitOf ? '반려' : '—', after: '승인 대기', requester: am }))
+    case 'approve':
+    case 'reject': {
+      if (n.conflict && !s.conflict) return addAudit(n, entry({ ...base, type: '승인', actor: n.conflict.by, before: '승인 대기', after: '승인됨', requester: am, approver: n.conflict.by }))
+      if (a.type === 'approve') return addAudit(n, entry({ ...base, type: '승인', actor: USERS.admin.name, before: '승인 대기', after: '승인됨', requester: am, approver: USERS.admin.name }))
+      return addAudit(n, entry({ ...base, type: '반려', actor: USERS.admin.name, before: '승인 대기', after: '반려', reason: a.reason, requester: am, approver: USERS.admin.name }))
+    }
+    case 'execute': {
+      const checks = checkAll(s)
+      const es = (Object.keys(n.deploy.runs) as FactoryId[]).map((f) =>
+        entry({ ...base, type: '배포 실행', factory: f, actor: USERS.admin.name, before: `v${s.factoryVersion[f]}`, after: '설치 중', requester: am, approver: v?.approvedBy, executor: USERS.admin.name, snapshot: checks[f]?.items }),
+      )
+      return addAudit(n, ...es)
+    }
+    case 'tick': {
+      const es: AuditEntry[] = []
+      for (const f of Object.keys(n.deploy.runs) as FactoryId[]) {
+        const was = s.deploy.runs[f]?.phase
+        const is = n.deploy.runs[f]?.phase
+        if (was === is) continue
+        const at = now()
+        if (is === 'done') es.push(entry({ ...base, type: '반영', factory: f, actor: '시스템', before: `v${s.factoryVersion[f]}`, after: `v${v?.version}`, executor: USERS.admin.name, appliedAt: at }, at))
+        if (is === 'failed') es.push(entry({ ...base, type: '배포 실패', factory: f, actor: '시스템', before: `v${s.factoryVersion[f]}`, after: `v${s.factoryVersion[f]} 유지`, reason: '정상 동작 확인 기준 미충족', executor: USERS.admin.name }, at))
+      }
+      return es.length ? addAudit(n, ...es) : n
+    }
+    case 'nav':
+      if (a.view.name === 'audit' && s.view.name !== 'audit' && n.role === 'admin') return addAudit(n, entry({ type: '기록 조회', target: '변경 기록', actor: USERS.admin.name }))
+      return n
+  }
+  return n
+}
+
+export function reducer(s: State, a: Action): State {
+  if (a.type === 'reset') return initialState()
+  const acc = access(s, a)
+  if (acc) return acc
+  return withAudit(s, core(s, a), a)
 }

@@ -102,3 +102,27 @@ export const OTHER_APPS = [
   { category: '에너지 최적화', app: '조명 에너지 최적화', version: '1.1.0', installed: ['A', 'B', 'C'] as FactoryId[] },
   { category: '에너지 최적화', app: '건조로 에너지 최적화', version: '1.2.0', installed: ['A', 'B', 'C'] as FactoryId[] },
 ].map((a) => ({ ...a, factories: a.installed.length === 3 ? '3곳 완료' : `${a.installed.length}곳 완료 · ${3 - a.installed.length}곳 미배포` }))
+
+export const ALL_APPS = ['모터 진단', ...OTHER_APPS.map((a) => a.app)]
+export const appsIn = (f: FactoryId) => ['모터 진단', ...OTHER_APPS.filter((a) => a.installed.includes(f)).map((a) => a.app)]
+
+// 기존 계정 (계정 생성은 범위 밖)
+export type Person = { id: string; name: string; role: Role; factory?: FactoryId }
+export const PEOPLE: Person[] = [
+  { id: 'u-am', name: '정하늘', role: 'am' },
+  { id: 'u-admin', name: '윤서진', role: 'admin' },
+  { id: 'u-admin2', name: '한도윤', role: 'admin' },
+  { id: 'u-op', name: '강민재', role: 'op', factory: 'A' },
+  { id: 'u-op2', name: '이수아', role: 'op', factory: 'B' },
+  { id: 'u-op3', name: '박지호', role: 'op', factory: 'C' },
+]
+export const ME: Record<Role, string> = { am: 'u-am', admin: 'u-admin', op: 'u-op' }
+
+// 강민재(공장 A)는 사출·도장 품질 예측의 사용 권한이 없다 (흐름 2 시작점)
+export const LOCKED_FOR_OP = ['사출 품질 예측', '도장 품질 예측']
+export const initialGrants = (): Record<string, string[]> => ({
+  'u-am': [...ALL_APPS],
+  'u-op': appsIn('A').filter((a) => !LOCKED_FOR_OP.includes(a)),
+  'u-op2': appsIn('B'),
+  'u-op3': appsIn('C'),
+})

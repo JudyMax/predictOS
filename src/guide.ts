@@ -5,9 +5,9 @@ export type GuideStep = { no: number; role: Role | 'system'; title: string; hint
 
 export const STEPS: GuideStep[] = [
   { no: 1, role: 'am', title: '새 버전 등록', hint: "'새 버전 등록'을 눌러 패치 파일(app-a_v2.0.1.patch)을 올리고 제출하세요" },
-  { no: 2, role: 'admin', title: '검토 후 반려', hint: "승인 대기 행을 열어 '반려'를 누르고 사유를 입력하세요", exception: '예외 ② 승인 반려' },
+  { no: 2, role: 'admin', title: '검토 후 반려', hint: "모터 진단의 버전별 이력에서 승인 대기(v2.0.1) 행을 열고 '반려'를 눌러 사유를 입력하세요", exception: '예외 ② 승인 반려' },
   { no: 3, role: 'am', title: '반려 사유 확인·재제출', hint: "알림함이나 목록에서 반려된 버전을 열어 사유를 확인하고 '고친 파일로 재제출'을 누르세요" },
-  { no: 4, role: 'admin', title: '재검토 후 승인', hint: "다시 승인 대기가 된 행을 열어 바뀐 릴리즈 노트를 확인하고 '승인'을 누르세요" },
+  { no: 4, role: 'admin', title: '재검토 후 승인', hint: "다시 승인 대기가 된 v2.0.1 행을 열어 바뀐 릴리즈 노트를 확인하고 '승인'을 누르세요" },
   { no: 5, role: 'admin', title: '배포하기', hint: "승인된 버전 상세에서 '배포하기'를 누르세요" },
   { no: 6, role: 'admin', title: '공장 선택·사전 환경 검증', hint: "공장 A·B·C를 모두 고른 뒤 '사전 환경 검증'을 누르세요" },
   { no: 7, role: 'admin', title: '차단 확인·부족 항목 채우기', hint: "공장 B의 차단 사유를 확인하고, 공장 C의 '채우기'로 부족 항목을 채우세요", exception: '예외 ④ 버전 충돌' },

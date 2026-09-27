@@ -1,7 +1,8 @@
 import { FACTORIES, OTHER_APPS, WORKSPACE } from '../data'
 import { useApp } from '../store'
 import { RegBadge } from '../components/ui'
-import type { Version } from '../state'
+import { useState } from 'react'
+import { cmpVer, type Version } from '../state'
 
 function summary(v: Version, runs: ReturnType<typeof useApp>['s']['deploy'], currentVersionOf: Record<string, string>) {
   if (v.seedSummary) return v.seedSummary
@@ -22,6 +23,9 @@ export default function VersionList() {
   const selectedId = s.drawer?.type === 'version' ? s.drawer.id : null
   const rejected = s.versions.find((v) => v.status === 'rejected')
   const pending = s.versions.filter((v) => v.status === 'pending')
+  const [open, setOpen] = useState(true)
+  const latest = s.versions.filter((v) => v.status === 'approved').sort((x, y) => cmpVer(y.version, x.version))[0]
+  const newest = s.versions[0]
 
   return (
     <>
@@ -48,7 +52,7 @@ export default function VersionList() {
             <tr>
               <th style={{ width: '20%' }}>앱</th>
               <th style={{ width: '11%' }}>분류</th>
-              <th style={{ width: '10%' }} className="r">버전</th>
+              <th style={{ width: '12%' }} className="r">최신 승인 버전</th>
               <th style={{ width: '13%' }}>등록 상태</th>
               <th>공장별 배포 요약</th>
               <th style={{ width: '10%' }}>제출자</th>
@@ -56,25 +60,40 @@ export default function VersionList() {
             </tr>
           </thead>
           <tbody>
-            {s.versions.map((v) => (
-              <tr
-                key={v.id + v.submittedAt}
-                className={`clickable ${selectedId === v.id ? 'selected' : ''} ${s.freshId === v.id ? 'fresh' : ''}`}
-                onClick={() => d({ type: 'drawer', drawer: { type: 'version', id: v.id } })}
-              >
-                <td>모터 진단</td><td className="mute">설비 진단</td>
-                <td className="r mono tnum">v{v.version}</td>
-                <td><RegBadge status={v.status} /></td>
-                <td className="mute">{summary(v, s.deploy, s.factoryVersion)}</td>
-                <td>{v.submitter}</td>
-                <td className="r tnum mute">{v.submittedAt}</td>
-              </tr>
-            ))}
+            <tr className="clickable" onClick={() => setOpen(!open)}>
+              <td><span className="chev">{open ? '▾' : '▸'}</span>모터 진단 <span className="caption">버전 {s.versions.length}개</span></td>
+              <td className="mute">설비 진단</td>
+              <td className="r mono tnum">v{latest.version}</td>
+              <td>{pending.length ? <RegBadge status="pending" /> : rejected ? <RegBadge status="rejected" /> : <RegBadge status="approved" />}</td>
+              <td className="mute">{summary(latest, s.deploy, s.factoryVersion)}</td>
+              <td>{newest.submitter}</td>
+              <td className="r tnum mute">{newest.submittedAt}</td>
+            </tr>
+            {open && (
+              <>
+                <tr className="sub-head"><td colSpan={7}>버전별 등록 이력 · 행을 누르면 상세가 열립니다</td></tr>
+                {s.versions.map((v) => (
+                  <tr
+                    key={v.id + v.submittedAt}
+                    className={`sub-row clickable ${selectedId === v.id ? 'selected' : ''} ${s.freshId === v.id ? 'fresh' : ''}`}
+                    onClick={() => d({ type: 'drawer', drawer: { type: 'version', id: v.id } })}
+                  >
+                    <td className="mono tnum" style={{ paddingLeft: 40 }}>v{v.version}</td>
+                    <td />
+                    <td />
+                    <td><RegBadge status={v.status} /></td>
+                    <td className="mute">{summary(v, s.deploy, s.factoryVersion)}</td>
+                    <td>{v.submitter}</td>
+                    <td className="r tnum mute">{v.submittedAt}</td>
+                  </tr>
+                ))}
+              </>
+            )}
             {s.role === 'admin' &&
               OTHER_APPS.map((o) => (
                 <tr key={o.app}>
-                  <td className="mute">{o.app}</td><td className="mute">{o.category}</td>
-                  <td className="r mono tnum mute">v{o.version}</td>
+                  <td><span className="chev" />{o.app}</td><td className="mute">{o.category}</td>
+                  <td className="r mono tnum">v{o.version}</td>
                   <td><RegBadge status="approved" /></td>
                   <td className="mute">{o.factories}</td>
                   <td className="mute">—</td>

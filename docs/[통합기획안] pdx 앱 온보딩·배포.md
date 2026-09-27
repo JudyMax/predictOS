@@ -1,4 +1,4 @@
-# pdx 제조 AI application 온보딩·배포 관리 MVP 통합 기획안
+# pdx Factory AI OS 온보딩·배포 관리 MVP 통합 기획안
 
 주제 A · 작성자 김윤주
 

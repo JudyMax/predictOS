@@ -4,17 +4,17 @@ product: PDX
 owner: 김윤주
 generated_at: 2026-09-27T09:26:53Z
 status: draft
-version: v0.1
+version: v0.2
 gates: pass
 adversarial_review: pass
 reader_simulation: warn
 prd: {path: [PRD] pdx 앱 온보딩·배포.md, version: v0.3}
-policy: {path: [Policy] pdx 앱 온보딩·배포.md, version: v2.4}
+policy: {path: [Policy] pdx 앱 온보딩·배포.md, version: v2.5}
 ---
 
 # [Spec] pdx 앱 온보딩·배포 Spec
 
-> **검증 통과** · 적대적 리뷰: pass · 상태: draft · 버전: v0.1 · PRD v0.3 · POLICY v2.4
+> **검증 통과** · 적대적 리뷰: pass · 상태: draft · 버전: v0.2 · PRD v0.3 · POLICY v2.5
 
 ## Reader Contract
 
@@ -73,54 +73,54 @@ policy: {path: [Policy] pdx 앱 온보딩·배포.md, version: v2.4}
 
 | POL ID | 정책 버전 | 상태 | 적용 REQ |
 |---|---|---|---|
-| POL-001 | v2.4 | 현행 | - |
-| POL-007 | v2.4 | 현행 | REQ-BE-REG-005, REQ-FE-REG-002 |
-| POL-008 | v2.4 | 현행 | REQ-BE-REG-001, REQ-BE-REG-005 |
-| POL-009 | v2.4 | 현행 | REQ-BE-REG-003 |
-| POL-010 | v2.4 | 현행 | REQ-BE-REG-002, REQ-BE-REG-006 |
-| POL-012 | v2.4 | 현행 | REQ-BE-APRV-001 |
-| POL-013 | v2.4 | 현행 | REQ-BE-APRV-002 |
-| POL-015 | v2.4 | 현행 | REQ-BE-APRV-005, REQ-FE-APRV-003 |
-| POL-016 | v2.4 | 현행 | REQ-BE-APRV-006 |
-| POL-017 | v2.4 | 현행 | REQ-BE-APRV-007, REQ-FE-APRV-004 |
-| POL-018 | v2.4 | 현행 | REQ-BE-REG-001, REQ-BE-APRV-003, REQ-FE-APRV-002, REQ-BE-APRV-004, REQ-FE-DEPLOY-007, REQ-FE-STAT-005 |
-| POL-019 | v2.4 | 현행 | REQ-BE-APRV-003, REQ-FE-APRV-002 |
-| POL-021 | v2.4 | 현행 | REQ-BE-DEPLOY-003, REQ-BE-DEPLOY-004, REQ-BE-DEPLOY-009 |
-| POL-022 | v2.4 | 현행 | REQ-BE-DEPLOY-004, REQ-BE-DEPLOY-005 |
-| POL-023 | v2.4 | 현행 | REQ-BE-DEPLOY-006 |
-| POL-024 | v2.4 | 현행 | REQ-BE-DEPLOY-007 |
-| POL-025 | v2.4 | 현행 | REQ-BE-DEPLOY-009, REQ-BE-DEPLOY-010, REQ-BE-DEPLOY-011 |
-| POL-026 | v2.4 | 현행 | REQ-BE-DEPLOY-008, REQ-FE-DEPLOY-003 |
-| POL-027 | v2.4 | 현행 | REQ-BE-DEPLOY-012 |
-| POL-029 | v2.4 | 현행 | REQ-BE-DEPLOY-013 |
-| POL-030 | v2.4 | 현행 | REQ-BE-DEPLOY-012, REQ-BE-DEPLOY-015, REQ-BE-DEPLOY-019, REQ-FE-STAT-002, REQ-BE-STAT-002, REQ-FE-STAT-004, REQ-FE-STAT-005 |
-| POL-032 | v2.4 | 현행 | REQ-BE-DEPLOY-016 |
-| POL-033 | v2.4 | 현행 | REQ-BE-DEPLOY-017, REQ-BE-DEPLOY-023, REQ-FE-DEPLOY-008 |
-| POL-034 | v2.4 | 현행 | REQ-BE-DEPLOY-018, REQ-FE-DEPLOY-009, REQ-FE-DEPLOY-010, REQ-FE-DEPLOY-011 |
-| POL-037 | v2.4 | 현행 | REQ-BE-ACCT-001 |
-| POL-040 | v2.4 | 현행 | REQ-FE-STAT-003, REQ-BE-STAT-003 |
-| POL-042 | v2.4 | 현행 | REQ-FE-STAT-001, REQ-BE-STAT-001 |
-| POL-046 | v2.4 | 현행 | REQ-BE-ACCT-002, REQ-BE-ACCT-003 |
-| POL-047 | v2.4 | 현행 | REQ-BE-ACCT-004 |
-| POL-049 | v2.4 | 현행 | REQ-BE-ACCT-005 |
-| POL-050 | v2.4 | 현행 | REQ-BE-ACCT-006 |
-| POL-051 | v2.4 | 현행 | REQ-BE-ACCT-007 |
-| POL-052 | v2.4 | 현행 | REQ-BE-ACCT-008, REQ-BE-ACCT-009, REQ-FE-ACCT-005 |
-| POL-053 | v2.4 | 현행 | REQ-BE-ACCT-010 |
-| POL-054 | v2.4 | 현행 | REQ-BE-AUDIT-003 |
-| POL-055 | v2.4 | 현행 | REQ-FE-AUDIT-001, REQ-BE-AUDIT-003, REQ-BE-AUDIT-006 |
-| POL-056 | v2.4 | 현행 | REQ-BE-AUDIT-001 |
-| POL-057 | v2.4 | 현행 | REQ-BE-AUDIT-004 |
-| POL-058 | v2.4 | 현행 | REQ-BE-AUDIT-002 |
-| POL-059 | v2.4 | 현행 | REQ-BE-AUDIT-005 |
-| POL-061 | v2.4 | 현행 | REQ-BE-REG-006 |
-| POL-062 | v2.4 | 현행 | REQ-BE-REG-006 |
-| POL-063 | v2.4 | 현행 | REQ-BE-REG-006 |
-| POL-064 | v2.4 | 현행 | REQ-BE-APRV-008, REQ-FE-APRV-005, REQ-FE-APRV-006 |
-| POL-065 | v2.4 | 현행 | REQ-BE-DEPLOY-020 |
-| POL-066 | v2.4 | 현행 | REQ-BE-DEPLOY-021 |
-| POL-067 | v2.4 | 현행 | REQ-BE-DEPLOY-012, REQ-BE-DEPLOY-022 |
-| POL-068 | v2.4 | 현행 | REQ-BE-ACCT-011 |
+| POL-001 | v2.5 | 현행 | - |
+| POL-007 | v2.5 | 현행 | REQ-BE-REG-005, REQ-FE-REG-002 |
+| POL-008 | v2.5 | 현행 | REQ-BE-REG-001, REQ-BE-REG-005 |
+| POL-009 | v2.5 | 현행 | REQ-BE-REG-003 |
+| POL-010 | v2.5 | 현행 | REQ-BE-REG-002, REQ-BE-REG-006 |
+| POL-012 | v2.5 | 현행 | REQ-BE-APRV-001 |
+| POL-013 | v2.5 | 현행 | REQ-BE-APRV-002 |
+| POL-015 | v2.5 | 현행 | REQ-BE-APRV-005, REQ-FE-APRV-003 |
+| POL-016 | v2.5 | 현행 | REQ-BE-APRV-006 |
+| POL-017 | v2.5 | 현행 | REQ-BE-APRV-007, REQ-FE-APRV-004 |
+| POL-018 | v2.5 | 현행 | REQ-BE-REG-001, REQ-BE-APRV-003, REQ-FE-APRV-002, REQ-BE-APRV-004, REQ-FE-DEPLOY-007, REQ-FE-STAT-005 |
+| POL-019 | v2.5 | 현행 | REQ-BE-APRV-003, REQ-FE-APRV-002 |
+| POL-021 | v2.5 | 현행 | REQ-BE-DEPLOY-003, REQ-BE-DEPLOY-004, REQ-BE-DEPLOY-009 |
+| POL-022 | v2.5 | 현행 | REQ-BE-DEPLOY-004, REQ-BE-DEPLOY-005 |
+| POL-023 | v2.5 | 현행 | REQ-BE-DEPLOY-006 |
+| POL-024 | v2.5 | 현행 | REQ-BE-DEPLOY-007 |
+| POL-025 | v2.5 | 현행 | REQ-BE-DEPLOY-009, REQ-BE-DEPLOY-010, REQ-BE-DEPLOY-011 |
+| POL-026 | v2.5 | 현행 | REQ-BE-DEPLOY-008, REQ-FE-DEPLOY-003 |
+| POL-027 | v2.5 | 현행 | REQ-BE-DEPLOY-012 |
+| POL-029 | v2.5 | 현행 | REQ-BE-DEPLOY-013 |
+| POL-030 | v2.5 | 현행 | REQ-BE-DEPLOY-012, REQ-BE-DEPLOY-015, REQ-BE-DEPLOY-019, REQ-FE-STAT-002, REQ-BE-STAT-002, REQ-FE-STAT-004, REQ-FE-STAT-005 |
+| POL-032 | v2.5 | 현행 | REQ-BE-DEPLOY-016 |
+| POL-033 | v2.5 | 현행 | REQ-BE-DEPLOY-017, REQ-BE-DEPLOY-023, REQ-FE-DEPLOY-008 |
+| POL-034 | v2.5 | 현행 | REQ-BE-DEPLOY-018, REQ-FE-DEPLOY-009, REQ-FE-DEPLOY-010, REQ-FE-DEPLOY-011 |
+| POL-037 | v2.5 | 현행 | REQ-BE-ACCT-001 |
+| POL-040 | v2.5 | 현행 | REQ-FE-STAT-003, REQ-BE-STAT-003 |
+| POL-042 | v2.5 | 현행 | REQ-FE-STAT-001, REQ-BE-STAT-001 |
+| POL-046 | v2.5 | 현행 | REQ-BE-ACCT-002, REQ-BE-ACCT-003 |
+| POL-047 | v2.5 | 현행 | REQ-BE-ACCT-004 |
+| POL-049 | v2.5 | 현행 | REQ-BE-ACCT-005 |
+| POL-050 | v2.5 | 현행 | REQ-BE-ACCT-006 |
+| POL-051 | v2.5 | 현행 | REQ-BE-ACCT-007 |
+| POL-052 | v2.5 | 현행 | REQ-BE-ACCT-008, REQ-BE-ACCT-009, REQ-FE-ACCT-005 |
+| POL-053 | v2.5 | 현행 | REQ-BE-ACCT-010 |
+| POL-054 | v2.5 | 현행 | REQ-BE-AUDIT-003 |
+| POL-055 | v2.5 | 현행 | REQ-FE-AUDIT-001, REQ-BE-AUDIT-003, REQ-BE-AUDIT-006 |
+| POL-056 | v2.5 | 현행 | REQ-BE-AUDIT-001 |
+| POL-057 | v2.5 | 현행 | REQ-BE-AUDIT-004 |
+| POL-058 | v2.5 | 현행 | REQ-BE-AUDIT-002 |
+| POL-059 | v2.5 | 현행 | REQ-BE-AUDIT-005 |
+| POL-061 | v2.5 | 현행 | REQ-BE-REG-006 |
+| POL-062 | v2.5 | 현행 | REQ-BE-REG-006 |
+| POL-063 | v2.5 | 현행 | REQ-BE-REG-006 |
+| POL-064 | v2.5 | 현행 | REQ-BE-APRV-008, REQ-FE-APRV-005, REQ-FE-APRV-006 |
+| POL-065 | v2.5 | 현행 | REQ-BE-DEPLOY-020 |
+| POL-066 | v2.5 | 현행 | REQ-BE-DEPLOY-021 |
+| POL-067 | v2.5 | 현행 | REQ-BE-DEPLOY-012, REQ-BE-DEPLOY-022 |
+| POL-068 | v2.5 | 현행 | REQ-BE-ACCT-011 |
 
 </details>
 
@@ -130,7 +130,7 @@ policy: {path: [Policy] pdx 앱 온보딩·배포.md, version: v2.4}
 
 | REQ ID | Category | Story | 요구사항 (EARS) | Layer | 결정 이력 | 연관 정책 · 근거 |
 |---|---|---|---|---|---|---|
-| REQ-BE-ACCT-001 | 계정 관리 / 권한 부여 | PDX-FO-ACCT-001: 필요한 사람에게 필요한 접근을 주기 위해, 사용자에게 앱 접근 권한을 부여할 수 있다. | **WHEN** Platform Admin이 사용자에게 앱 접근 권한을 부여하면 **THEN** 시스템 **SHALL** 그 사용자의 역할·접근 권한을 앱별로 추가한다 | BE | - | POL-037 [^16] |
+| REQ-BE-ACCT-001 | 계정 관리 / 권한 부여 | PDX-FO-ACCT-001: 필요한 사람에게 필요한 접근을 주기 위해, 사용자에게 앱 접근 권한을 부여할 수 있다. | **WHEN** Platform Admin이 사용자에게 앱 접근 권한을 부여하면 **THEN** 시스템 **SHALL** 그 사용자의 앱 접근 권한을 앱별로 추가한다(역할은 계정마다 하나다) | BE | - | POL-037 [^16] |
 | REQ-FE-ACCT-001 | 계정 관리 / 권한 부여 | PDX-FO-ACCT-001 | **WHEN** Platform Admin이 권한 관리 화면에서 권한을 부여하면 **THEN** 권한 관리 화면 **SHALL** 부여 결과를 표시한다 | FE | - | [^1] |
 | REQ-BE-ACCT-002 | 계정 관리 / 권한 제한 | PDX-FO-ACCT-002: 접근을 막아야 하는 사람을 제때 제한하기 위해, 사용자의 앱 접근 권한을 제한할 수 있다. | **WHEN** Platform Admin이 사용자의 앱 접근 권한을 제한하면 **THEN** 시스템 **SHALL** 그 앱의 접근 권한을 제거한다 | BE | - | POL-046 [^17] |
 | REQ-BE-ACCT-003 | 계정 관리 / 권한 제한 | PDX-FO-ACCT-002 | **WHEN** Platform Admin이 계정 전체를 차단하면 **THEN** 시스템 **SHALL** 그 계정을 비활성화한다 | BE | - | POL-046 [^17] |
@@ -262,9 +262,9 @@ policy: {path: [Policy] pdx 앱 온보딩·배포.md, version: v2.4}
 
 [^1]: prd/Solution @ v0.3
 [^2]: prd/Users @ v0.3
-[^3]: policy/POL-010 @ v2.4
-[^4]: policy/POL-024 @ v2.4
-[^5]: policy/POL-033 @ v2.4
+[^3]: policy/POL-010 @ v2.5
+[^4]: policy/POL-024 @ v2.5
+[^5]: policy/POL-033 @ v2.5
 [^6]: interview/SQ8 @ 2026-09-27
 [^7]: prd/Scope @ v0.3
 [^8]: interview/SQ11 @ 2026-09-27
@@ -275,59 +275,59 @@ policy: {path: [Policy] pdx 앱 온보딩·배포.md, version: v2.4}
 [^13]: interview/Q25 @ 2026-09-27
 [^14]: interview/SQ6 @ 2026-09-27
 [^15]: interview/SQ7 @ 2026-09-27
-[^16]: policy/POL-037 @ v2.4
-[^17]: policy/POL-046 @ v2.4
-[^18]: policy/POL-047 @ v2.4
-[^19]: policy/POL-049 @ v2.4
-[^20]: policy/POL-050 @ v2.4
-[^21]: policy/POL-051 @ v2.4
-[^22]: policy/POL-068 @ v2.4
-[^23]: policy/POL-052 @ v2.4
-[^24]: policy/POL-053 @ v2.4
+[^16]: policy/POL-037 @ v2.5
+[^17]: policy/POL-046 @ v2.5
+[^18]: policy/POL-047 @ v2.5
+[^19]: policy/POL-049 @ v2.5
+[^20]: policy/POL-050 @ v2.5
+[^21]: policy/POL-051 @ v2.5
+[^22]: policy/POL-068 @ v2.5
+[^23]: policy/POL-052 @ v2.5
+[^24]: policy/POL-053 @ v2.5
 [^25]: file/Wireframe-인터뷰.md#WG-08 @ 2026-09-27
-[^26]: policy/POL-012 @ v2.4
-[^27]: policy/POL-013 @ v2.4
-[^28]: policy/POL-064 @ v2.4
+[^26]: policy/POL-012 @ v2.5
+[^27]: policy/POL-013 @ v2.5
+[^28]: policy/POL-064 @ v2.5
 [^29]: file/Wireframe-인터뷰.md#WG-05 @ 2026-09-27
-[^30]: policy/POL-018 @ v2.4
-[^31]: policy/POL-019 @ v2.4
-[^32]: policy/POL-015 @ v2.4
-[^33]: policy/POL-016 @ v2.4
-[^34]: policy/POL-017 @ v2.4
-[^35]: policy/POL-056 @ v2.4
-[^36]: policy/POL-058 @ v2.4
-[^37]: policy/POL-055 @ v2.4
+[^30]: policy/POL-018 @ v2.5
+[^31]: policy/POL-019 @ v2.5
+[^32]: policy/POL-015 @ v2.5
+[^33]: policy/POL-016 @ v2.5
+[^34]: policy/POL-017 @ v2.5
+[^35]: policy/POL-056 @ v2.5
+[^36]: policy/POL-058 @ v2.5
+[^37]: policy/POL-055 @ v2.5
 [^38]: file/Wireframe-인터뷰.md#구조검토-변경기록조회 @ 2026-09-27
 [^39]: interview/SQ19 @ 2026-09-27
-[^40]: policy/POL-054 @ v2.4
-[^41]: policy/POL-057 @ v2.4
-[^42]: policy/POL-059 @ v2.4
+[^40]: policy/POL-054 @ v2.5
+[^41]: policy/POL-057 @ v2.5
+[^42]: policy/POL-059 @ v2.5
 [^43]: interview/SQ5 @ 2026-09-27
-[^44]: policy/POL-021 @ v2.4
+[^44]: policy/POL-021 @ v2.5
 [^45]: interview/SQ18 @ 2026-09-27
-[^46]: policy/POL-022 @ v2.4
-[^47]: policy/POL-023 @ v2.4
-[^48]: policy/POL-065 @ v2.4
+[^46]: policy/POL-022 @ v2.5
+[^47]: policy/POL-023 @ v2.5
+[^48]: policy/POL-065 @ v2.5
 [^49]: file/Wireframe-인터뷰.md#WG-10 @ 2026-09-27
-[^50]: policy/POL-066 @ v2.4
-[^51]: policy/POL-026 @ v2.4
-[^52]: policy/POL-025 @ v2.4
-[^53]: policy/POL-027 @ v2.4
-[^54]: policy/POL-030 @ v2.4
-[^55]: policy/POL-067 @ v2.4
-[^56]: policy/POL-029 @ v2.4
-[^57]: policy/POL-032 @ v2.4
-[^58]: policy/POL-034 @ v2.4
+[^50]: policy/POL-066 @ v2.5
+[^51]: policy/POL-026 @ v2.5
+[^52]: policy/POL-025 @ v2.5
+[^53]: policy/POL-027 @ v2.5
+[^54]: policy/POL-030 @ v2.5
+[^55]: policy/POL-067 @ v2.5
+[^56]: policy/POL-029 @ v2.5
+[^57]: policy/POL-032 @ v2.5
+[^58]: policy/POL-034 @ v2.5
 [^59]: file/Wireframe-인터뷰.md#WG-06 @ 2026-09-27
-[^60]: policy/POL-008 @ v2.4
-[^61]: policy/POL-009 @ v2.4
-[^62]: policy/POL-061 @ v2.4
-[^63]: policy/POL-062 @ v2.4
-[^64]: policy/POL-063 @ v2.4
-[^65]: policy/POL-007 @ v2.4
-[^66]: policy/POL-042 @ v2.4
+[^60]: policy/POL-008 @ v2.5
+[^61]: policy/POL-009 @ v2.5
+[^62]: policy/POL-061 @ v2.5
+[^63]: policy/POL-062 @ v2.5
+[^64]: policy/POL-063 @ v2.5
+[^65]: policy/POL-007 @ v2.5
+[^66]: policy/POL-042 @ v2.5
 [^67]: file/Wireframe-인터뷰.md#WG-07 @ 2026-09-27
-[^68]: policy/POL-040 @ v2.4
+[^68]: policy/POL-040 @ v2.5
 [^69]: interview/Q20 @ 2026-09-27
 [^70]: interview/Q22 @ 2026-09-27
 [^71]: prd/EvidenceGaps @ v0.3
@@ -341,3 +341,4 @@ policy: {path: [Policy] pdx 앱 온보딩·배포.md, version: v2.4}
 | 버전 | 날짜 | 변경 내용 | 변경 사유 |
 |---|---|---|---|
 | v0.1 | 2026-09-27 | 최초 작성 | - |
+| v0.2 | 2026-10-01 | REQ-BE-ACCT-001에서 역할을 앱별로 추가하던 문구를 접근 권한만 앱별로 추가하도록 수정, 인용 정책 버전 v2.5로 갱신 | 정책 v2.5 개정(한 계정은 역할 하나) |
